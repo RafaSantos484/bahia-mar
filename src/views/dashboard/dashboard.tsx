@@ -31,7 +31,7 @@ import {
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
-import { deleteDocument } from "../../apis/firebase";
+import { deleteDocument, logout } from "../../apis/firebase";
 
 const themes = createTheme({
   palette: {
@@ -84,6 +84,15 @@ export default function Dashboard() {
 
   return (
     <div className="global-fullscreen-container dashboard-container">
+      <Button
+        style={{ position: "absolute", top: "1vh", left: "1vw" }}
+        variant="contained"
+        color="error"
+        onClick={logout}
+      >
+        SAIR(TEMP)
+      </Button>
+
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
       {!!creatingDataType && (
