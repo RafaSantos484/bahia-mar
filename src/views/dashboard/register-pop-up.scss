@@ -1,0 +1,59 @@
+.register-pop-up-container {
+  width: 80%;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  border-radius: 10px;
+
+  .header-container {
+    position: relative;
+    width: 100%;
+    height: 10%;
+    margin-bottom: 5vh;
+    background-color: #214f6e;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    > span {
+      color: white;
+      text-transform: uppercase;
+    }
+    .close-btn {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+  }
+
+  form {
+    display: flex;
+    position: relative;
+    flex: 1;
+    flex-direction: column;
+    width: 90%;
+
+    .two-fields-container {
+      display: flex;
+      justify-content: space-between;
+
+      > div {
+        width: 48%;
+        margin: 2vh 0;
+      }
+    }
+
+    .register-btn {
+      margin-top: auto;
+      margin-bottom: 2vh;
+      width: fit-content;
+      align-self: flex-end;
+    }
+  }
+}

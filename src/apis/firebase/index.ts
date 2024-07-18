@@ -7,11 +7,18 @@ import {
   User,
 } from "firebase/auth";
 import {
+  addDoc,
+  collection,
+  deleteDoc,
   doc,
   DocumentData,
   DocumentSnapshot,
   getFirestore,
   onSnapshot,
+  query,
+  QuerySnapshot,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -45,4 +52,26 @@ export function onDocChange(
 ) {
   const dbRef = doc(db, path, id);
   return onSnapshot(dbRef, onValue);
+}
+export async function setDocument(path: string, id: string, data: any) {
+  const dbRef = doc(db, path, id);
+  await setDoc(dbRef, data);
+}
+export async function pushDoc(path: string, data: any, withCreatedAt = true) {
+  const dbRef = collection(db, path);
+
+  if (withCreatedAt) data.createdAt = serverTimestamp();
+  await addDoc(dbRef, data);
+}
+export async function deleteDocument(path: string, id: string) {
+  const docRef = doc(db, path, id);
+  await deleteDoc(docRef);
+}
+
+export function onCollectionChange(
+  path: string,
+  onValue: (collection: QuerySnapshot<DocumentData>) => void
+) {
+  const _query = query(collection(db, path));
+  return onSnapshot(_query, onValue);
 }
