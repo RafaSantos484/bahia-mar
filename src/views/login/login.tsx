@@ -101,7 +101,7 @@ export default function Login() {
             variant="outlined"
             fullWidth
             required
-            inputProps={{ minlength: 6, maxlength: 15 }}
+            inputProps={{ minLength: 6, maxLength: 15 }}
             value={password}
             onChange={(e) => setPassword(e.target.value.trim())}
           />

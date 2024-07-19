@@ -19,7 +19,15 @@ import {
   QuerySnapshot,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
+import {
+  deleteObject,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -33,6 +41,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 export async function login(email: string, password: string) {
   const { user } = await signInWithEmailAndPassword(auth, email, password);
@@ -57,11 +66,20 @@ export async function setDocument(path: string, id: string, data: any) {
   const dbRef = doc(db, path, id);
   await setDoc(dbRef, data);
 }
-export async function pushDoc(path: string, data: any, withCreatedAt = true) {
+export async function pushDocument(
+  path: string,
+  data: any,
+  withCreatedAt = true
+) {
   const dbRef = collection(db, path);
 
   if (withCreatedAt) data.createdAt = serverTimestamp();
-  await addDoc(dbRef, data);
+  const result = await addDoc(dbRef, data);
+  return result.id;
+}
+export async function updateDocument(path: string, id: string, data: any) {
+  const docRef = doc(db, path, id);
+  await updateDoc(docRef, data);
 }
 export async function deleteDocument(path: string, id: string) {
   const docRef = doc(db, path, id);
@@ -74,4 +92,20 @@ export function onCollectionChange(
 ) {
   const _query = query(collection(db, path));
   return onSnapshot(_query, onValue);
+}
+
+export async function uploadFile(
+  id: string,
+  filename: string,
+  file: File | Blob
+) {
+  const storageRef = ref(storage, `${id}/${filename}`);
+  const result = await uploadBytes(storageRef, file);
+
+  const downloadUrl = await getDownloadURL(result.ref);
+  return downloadUrl;
+}
+export async function deleteFile(path: string, id: string) {
+  const storageRef = ref(storage, `${path}/${id}`);
+  await deleteObject(storageRef);
 }

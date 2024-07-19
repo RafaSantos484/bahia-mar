@@ -55,3 +55,16 @@ export const clientAttrsTranslator = {
 
   address: "Endereço",
 };
+
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  photoSrc: string;
+  createdAt: Timestamp;
+};
+export type Products = Product[];
+export const productAttrsTranslator = {
+  name: "Nome",
+  price: "Preço",
+};

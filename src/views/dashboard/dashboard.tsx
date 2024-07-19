@@ -7,6 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Paper,
+  Popover,
   Select,
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import {
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import InsertPhotoOutlinedIcon from "@mui/icons-material/InsertPhotoOutlined";
 
 import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
@@ -26,12 +28,14 @@ import { useGlobalState } from "../../global-state-context";
 import {
   Client,
   clientAttrsTranslator,
+  Product,
+  productAttrsTranslator,
   Vehicle,
   vehicleAttrsTranslator,
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
-import { deleteDocument, logout } from "../../apis/firebase";
+import { deleteDocument, deleteFile, logout } from "../../apis/firebase";
 import { formatAddress } from "../../utils";
 
 const themes = createTheme({
@@ -45,31 +49,37 @@ const themes = createTheme({
   },
 });
 
-export type DataType = "vehicles" | "clients";
+export type DataType = "vehicles" | "clients" | "products";
 export const dataTypeTranslator = {
   vehicles: "Veículos",
   clients: "Clientes",
+  products: "Produtos",
 };
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
   clients: clientAttrsTranslator,
+  products: productAttrsTranslator,
 };
 
 const tableCols = {
   vehicles: ["type", "brand", "model", "plate"],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
+  products: ["name", "price", "photoSrc"],
 };
 
+let photoSrc = "";
 export default function Dashboard() {
   const navigate = useNavigate();
   const globalState = useGlobalState();
+  const [seePhotoAnchorRef, setSeePhotoAnchorRef] =
+    useState<HTMLTableCellElement | null>(null);
 
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
 
   const [dataType, setDataType] = useState<DataType>("vehicles");
   const [creatingDataType, setCreatingDataType] = useState<
-    { dataType: DataType; editingData?: Vehicle | Client } | undefined
+    { dataType: DataType; editingData?: Vehicle | Client | Product } | undefined
   >(undefined);
 
   useEffect(() => {
@@ -90,6 +100,33 @@ export default function Dashboard() {
 
   return (
     <div className="global-fullscreen-container dashboard-container">
+      <Popover
+        id="mouse-over-popover"
+        disableRestoreFocus
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "center",
+          horizontal: "left",
+        }}
+        open={!!seePhotoAnchorRef}
+        anchorEl={seePhotoAnchorRef}
+        onClose={() => setSeePhotoAnchorRef(null)}
+      >
+        <img
+          src={photoSrc}
+          alt="Foto do produto"
+          draggable={false}
+          style={{
+            width: "10vw",
+            height: "10vw",
+          }}
+          onMouseLeave={() => setSeePhotoAnchorRef(null)}
+        />
+      </Popover>
+
       <Button
         style={{ position: "absolute", top: "1vh", left: "1vw" }}
         variant="contained"
@@ -145,11 +182,23 @@ export default function Dashboard() {
             <Table stickyHeader sx={{ borderColor: "secondary" }}>
               <TableHead>
                 <TableRow>
-                  {tableCols[dataType].map((attr) => (
-                    <TableCell key={attr}>
-                      {(attrsTranslator[dataType] as any)[attr]}
-                    </TableCell>
-                  ))}
+                  {tableCols[dataType].map((attr) => {
+                    if (attr === "photoSrc")
+                      return (
+                        <Tooltip key={attr} title="Foto">
+                          <TableCell>
+                            <InsertPhotoOutlinedIcon />
+                          </TableCell>
+                        </Tooltip>
+                      );
+
+                    return (
+                      <TableCell key={attr}>
+                        {(attrsTranslator[dataType] as any)[attr]}
+                      </TableCell>
+                    );
+                  })}
+
                   <Tooltip title="Editar">
                     <TableCell>
                       <EditOutlinedIcon />
@@ -168,10 +217,39 @@ export default function Dashboard() {
                   return (
                     <TableRow key={el.id}>
                       {tableCols[dataType].map((attr) => {
+                        if (attr === "photoSrc") {
+                          return (
+                            <>
+                              <Tooltip
+                                key={`${el.id} ${attr}`}
+                                title={
+                                  !(el as any)[attr]
+                                    ? "Este produto não possui imagem"
+                                    : ""
+                                }
+                              >
+                                <TableCell
+                                  onMouseEnter={(e) => {
+                                    photoSrc = (el as any)[attr];
+                                    if (!isWaitingAsync && !!(el as any)[attr])
+                                      setSeePhotoAnchorRef(e.currentTarget);
+                                  }}
+                                >
+                                  <InsertPhotoOutlinedIcon />
+                                </TableCell>
+                              </Tooltip>
+                            </>
+                          );
+                        }
+
                         let value: string;
 
                         if (attr === "address")
                           value = formatAddress(el as Client);
+                        else if (attr === "price")
+                          value = (el as any)[attr]
+                            .toFixed(2)
+                            .replace(".", ",");
                         else value = (el as any)[attr];
 
                         return (
@@ -206,6 +284,9 @@ export default function Dashboard() {
                               ) {
                                 setIsWaitingAsync(true);
                                 try {
+                                  if ("photoSrc" in el && !!el.photoSrc) {
+                                    await deleteFile(el.id, "photo.png");
+                                  }
                                   await deleteDocument(dataType, el.id);
                                   setAlertInfo({
                                     severity: "success",

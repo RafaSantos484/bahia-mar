@@ -3,13 +3,16 @@ import {
   FormEvent,
   SetStateAction,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import HighlightOffOutlinedIcon from "@mui/icons-material/HighlightOffOutlined";
+import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 import { DataType, dataTypeTranslator } from "./dashboard";
 import "./register-pop-up.scss";
-import { sleep } from "../../utils";
+import { blobToString, resizeImage, sleep } from "../../utils";
 import {
   Button,
   createTheme,
@@ -20,10 +23,16 @@ import {
   Select,
   TextField,
   ThemeProvider,
+  Tooltip,
 } from "@mui/material";
-import { pushDoc, setDocument } from "../../apis/firebase";
+import {
+  deleteFile,
+  pushDocument,
+  updateDocument,
+  uploadFile,
+} from "../../apis/firebase";
 import { AlertInfo } from "../../components/custom-alert";
-import { Client, Vehicle } from "../../types";
+import { Client, Product, Vehicle } from "../../types";
 import { useGlobalState } from "../../global-state-context";
 
 const themes = createTheme({
@@ -41,7 +50,7 @@ type Props = {
   close: () => void;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?: Vehicle | Client;
+  editingData?: Vehicle | Client | Product;
   fadeTime?: number;
 };
 
@@ -65,6 +74,7 @@ export default function RegisterPopUp({
   const isEditing = !!editingData;
   const slicedDataType = dataTypeTranslator[dataType].slice(0, -1);
   const globalState = useGlobalState();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isOpen, setIsOpen] = useState(true);
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
@@ -77,52 +87,115 @@ export default function RegisterPopUp({
     close();
   }
 
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (isWaitingAsync) return;
+
+    if (e.target.files && e.target.files[0]) {
+      const image = e.target.files[0];
+      setIsWaitingAsync(true);
+      try {
+        const resizedImage = await resizeImage(image, 300, 300);
+        setData({ ...data, photoSrc: await blobToString(resizedImage) });
+      } catch (e) {
+        console.log(e);
+        setAlertInfo({
+          severity: "error",
+          message: "Falha ao tentar carregar imagem",
+        });
+      } finally {
+        setIsWaitingAsync(false);
+        e.target.value = "";
+      }
+    }
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isWaitingAsync || !globalState) return;
 
-    const { vehicles, clients } = globalState;
+    const { vehicles, clients, products } = globalState;
 
-    if (dataType === "vehicles") {
-      const plateIsRegistered = !!vehicles.find((v) => v.plate === data.plate);
-      const _editingData = editingData as Vehicle;
-      if (
-        plateIsRegistered &&
-        (!isEditing || data.plate !== _editingData.plate)
-      )
-        return setAlertInfo({
-          severity: "error",
-          message: `A placa ${data.plate} já está cadastrada em outro veículo`,
-        });
-    } else if (dataType === "clients") {
-      const cpfCnpjIsRegistered = !!clients.find(
-        (c) => c.cpfCnpj === data.cpfCnpj
-      );
-      const _editingData = editingData as Client;
-      if (
-        cpfCnpjIsRegistered &&
-        (!isEditing || data.cpfCnpj !== _editingData.cpfCnpj)
-      )
-        return setAlertInfo({
-          severity: "error",
-          message: `O ${data.type === "Física" ? "CPF" : "CNPJ"} ${
-            data.cpfCnpj
-          } já está cadastrado em outro cliente`,
-        });
-    }
-
-    setIsWaitingAsync(true);
     try {
+      if (dataType === "vehicles") {
+        const plateIsRegistered = !!vehicles.find(
+          (v) => v.plate === data.plate
+        );
+        const _editingData = editingData as Vehicle;
+        if (
+          plateIsRegistered &&
+          (!isEditing || data.plate !== _editingData.plate)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `A placa ${data.plate} já está cadastrada em outro veículo`,
+          });
+      } else if (dataType === "clients") {
+        const cpfCnpjIsRegistered = !!clients.find(
+          (c) => c.cpfCnpj === data.cpfCnpj
+        );
+        const _editingData = editingData as Client;
+        if (
+          cpfCnpjIsRegistered &&
+          (!isEditing || data.cpfCnpj !== _editingData.cpfCnpj)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `O ${data.type === "Física" ? "CPF" : "CNPJ"} ${
+              data.cpfCnpj
+            } já está cadastrado em outro cliente`,
+          });
+      } else if (dataType === "products") {
+        const nameIsRegistered = !!products.find((p) => p.name === data.name);
+        const _editingData = editingData as Product;
+        if (nameIsRegistered && (!isEditing || data.name !== _editingData.name))
+          return setAlertInfo({
+            severity: "error",
+            message: `O nome ${data.plate} já está cadastrada em outro produto`,
+          });
+
+        let numPrice = Number(data.price.replace(",", "."));
+        if (isNaN(numPrice) || numPrice <= 0)
+          return setAlertInfo({
+            severity: "error",
+            message: `Preço inválido`,
+          });
+
+        if (isEditing && !!_editingData.photoSrc && !data.photoSrc)
+          await deleteFile(_editingData.id, "photo.png");
+      }
+
+      setIsWaitingAsync(true);
+
+      const _data: any = {};
       for (const key in data) {
         if (typeof data[key] === "string") data[key] = data[key].trim();
+
+        if (key === "price") {
+          _data[key] = Number(data[key].replace(",", "."));
+        } else {
+          _data[key] = data[key];
+        }
       }
       setData({ ...data });
 
+      let id = "";
+      let { photoSrc } = _data;
+      _data.photoSrc = "";
       if (isEditing) {
-        await setDocument(dataType, editingData.id, data);
+        if (photoSrc === (editingData as any).photoSrc) photoSrc = "";
+
+        await updateDocument(dataType, editingData.id, _data);
+        id = editingData.id;
       } else {
-        await pushDoc(dataType, data);
+        id = await pushDocument(dataType, _data);
       }
+      if (!!photoSrc) {
+        const response = await fetch(photoSrc);
+        const blob = await response.blob();
+        photoSrc = await uploadFile(id, "photo.png", blob);
+        await updateDocument("products", id, { photoSrc });
+      }
+
       setAlertInfo({
         severity: "success",
         message: `${slicedDataType} ${isEditing ? "editado" : "cadastrado"}`,
@@ -163,6 +236,13 @@ export default function RegisterPopUp({
         number: _editingData?.number || "",
         complement: _editingData?.complement || "",
       });
+    } else if (dataType === "products") {
+      const _editingData = editingData as Product | undefined;
+      setData({
+        name: _editingData?.name || "",
+        price: _editingData?.price.toFixed(2).replace(".", ",") || "",
+        photoSrc: _editingData?.photoSrc || "",
+      });
     } else {
       _close();
     }
@@ -193,6 +273,14 @@ export default function RegisterPopUp({
           </div>
 
           <form onSubmit={handleSubmit}>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+            />
+
             {dataType === "vehicles" && (
               <>
                 <div className="two-fields-container">
@@ -385,6 +473,65 @@ export default function RegisterPopUp({
                       setData({ ...data, complement: e.target.value })
                     }
                   />
+                </div>
+              </>
+            )}
+            {dataType === "products" && (
+              <>
+                <div className="two-fields-container">
+                  <TextField
+                    label="Nome"
+                    variant="outlined"
+                    type="text"
+                    required
+                    value={data.name}
+                    onChange={(e) => setData({ ...data, name: e.target.value })}
+                  />
+                  <TextField
+                    label="Preço"
+                    variant="outlined"
+                    type="text"
+                    inputProps={{
+                      pattern: "^[0-9]+(,[0-9]{1,2})?$",
+                      title: "O CEP deve possuir 8 dígitos",
+                    }}
+                    required
+                    value={data.price}
+                    onChange={(e) => {
+                      const value = e.target.value.trim().replace(".", ",");
+                      const priceRegex = /^\d+(,\d{0,2})?$/;
+                      if (value === "" || priceRegex.test(value))
+                        setData({ ...data, price: value });
+                    }}
+                  />
+                </div>
+
+                <div className="file-input-container">
+                  <IconButton
+                    className="clear-btn"
+                    color="error"
+                    disabled={isWaitingAsync || !data.photoSrc}
+                    onClick={() => setData({ ...data, photoSrc: "" })}
+                  >
+                    <CancelIcon />
+                  </IconButton>
+                  {!!data.photoSrc ? (
+                    <img
+                      src={data.photoSrc}
+                      draggable={false}
+                      alt="Foto do produto"
+                    />
+                  ) : (
+                    <Tooltip title="Fazer upload de foto">
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="upload-btn"
+                        disabled={isWaitingAsync}
+                      >
+                        <FileUploadOutlinedIcon />
+                      </Button>
+                    </Tooltip>
+                  )}
                 </div>
               </>
             )}
