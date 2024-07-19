@@ -32,6 +32,7 @@ import {
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
 import { deleteDocument, logout } from "../../apis/firebase";
+import { formatAddress } from "../../utils";
 
 const themes = createTheme({
   palette: {
@@ -52,6 +53,11 @@ export const dataTypeTranslator = {
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
   clients: clientAttrsTranslator,
+};
+
+const tableCols = {
+  vehicles: ["type", "brand", "model", "plate"],
+  clients: ["type", "name", "phone", "cpfCnpj", "address"],
 };
 
 export default function Dashboard() {
@@ -100,7 +106,6 @@ export default function Dashboard() {
           close={() => setCreatingDataType(undefined)}
           dataType={creatingDataType.dataType}
           setAlertInfo={setAlertInfo}
-          vehicles={globalState.vehicles}
           editingData={creatingDataType.editingData}
         />
       )}
@@ -140,13 +145,11 @@ export default function Dashboard() {
             <Table stickyHeader sx={{ borderColor: "secondary" }}>
               <TableHead>
                 <TableRow>
-                  {Object.values(attrsTranslator[dataType]).map(
-                    (translatedAttr) => (
-                      <TableCell key={translatedAttr}>
-                        {translatedAttr}
-                      </TableCell>
-                    )
-                  )}
+                  {tableCols[dataType].map((attr) => (
+                    <TableCell key={attr}>
+                      {(attrsTranslator[dataType] as any)[attr]}
+                    </TableCell>
+                  ))}
                   <Tooltip title="Editar">
                     <TableCell>
                       <EditOutlinedIcon />
@@ -164,12 +167,16 @@ export default function Dashboard() {
                 {globalState[dataType].map((el) => {
                   return (
                     <TableRow key={el.id}>
-                      {Object.keys(attrsTranslator[dataType]).map((attr) => {
-                        if (attr === "id" || attr === "createdAt") return null;
+                      {tableCols[dataType].map((attr) => {
+                        let value: string;
+
+                        if (attr === "address")
+                          value = formatAddress(el as Client);
+                        else value = (el as any)[attr];
 
                         return (
                           <TableCell key={`${el.id} ${attr}`}>
-                            {(el as any)[attr]}
+                            {value}
                           </TableCell>
                         );
                       })}
@@ -222,37 +229,6 @@ export default function Dashboard() {
                       </Tooltip>
                     </TableRow>
                   );
-                  /*
-                  if (dataType === "vehicles") {
-                    el = el as Vehicle;
-
-                    return (
-                      <TableRow key={el.id}>
-                        <TableCell>{el.type}</TableCell>
-                        <TableCell>{el.brand}</TableCell>
-                        <TableCell>{el.model}</TableCell>
-                        <TableCell>{el.plate}</TableCell>
-                      </TableRow>
-                    );
-                  } else if (dataType === "clients") {
-                    el = el as Client;
-
-                    return (
-                      <TableRow key={el.id}>
-                        <TableCell>{el.type}</TableCell>
-                        <TableCell>{el.name}</TableCell>
-                        <TableCell>{el.phone}</TableCell>
-                        <TableCell>{el.cpfCnpj}</TableCell>
-                        <TableCell>{el.cep}</TableCell>
-                        <TableCell>{el.city}</TableCell>
-                        <TableCell>{el.neighborhood}</TableCell>
-                        <TableCell>{el.street}</TableCell>
-                        <TableCell>{el.number}</TableCell>
-                        <TableCell>{el.complement}</TableCell>
-                      </TableRow>
-                    );
-                  } else return null;
-                   */
                 })}
               </TableBody>
             </Table>

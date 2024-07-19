@@ -52,4 +52,6 @@ export const clientAttrsTranslator = {
   street: "Rua",
   number: "Número",
   complement: "Complemento",
+
+  address: "Endereço",
 };

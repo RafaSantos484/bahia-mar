@@ -38,6 +38,7 @@
     flex: 1;
     flex-direction: column;
     width: 90%;
+    overflow: auto;
 
     .two-fields-container {
       display: flex;
@@ -48,6 +49,15 @@
         margin: 2vh 0;
       }
     }
+    .three-fields-container {
+      display: flex;
+      justify-content: space-between;
+
+      > div {
+        width: 30%;
+        margin: 2vh 0;
+      }
+    }
 
     .register-btn {
       margin-top: auto;
@@ -55,5 +65,27 @@
       width: fit-content;
       align-self: flex-end;
     }
+  }
+}
+
+.divider-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  > hr {
+    border-top: 0.3vh solid gray;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+  }
+  > span {
+    color: gray;
+    background-color: white;
+    padding: 0 1vw;
+    margin: 2vh 0;
+    z-index: 2;
   }
 }
