@@ -34,6 +34,7 @@ import {
 import { AlertInfo } from "../../components/custom-alert";
 import { Client, Product, Vehicle } from "../../types";
 import { useGlobalState } from "../../global-state-context";
+import { deleteField } from "firebase/firestore";
 
 const themes = createTheme({
   palette: {
@@ -160,8 +161,10 @@ export default function RegisterPopUp({
             message: `Preço inválido`,
           });
 
-        if (isEditing && !!_editingData.photoSrc && !data.photoSrc)
+        if (isEditing && !!_editingData.photoSrc && !data.photoSrc) {
           await deleteFile(_editingData.id, "photo.png");
+          data.photoSrc = deleteField();
+        }
       }
 
       setIsWaitingAsync(true);
@@ -180,20 +183,27 @@ export default function RegisterPopUp({
 
       let id = "";
       let { photoSrc } = _data;
-      _data.photoSrc = "";
+      delete _data.photoSrc;
       if (isEditing) {
-        if (photoSrc === (editingData as any).photoSrc) photoSrc = "";
+        // if (photoSrc === (editingData as any).photoSrc) photoSrc = "";
 
         await updateDocument(dataType, editingData.id, _data);
         id = editingData.id;
       } else {
         id = await pushDocument(dataType, _data);
       }
-      if (!!photoSrc) {
-        const response = await fetch(photoSrc);
-        const blob = await response.blob();
-        photoSrc = await uploadFile(id, "photo.png", blob);
-        await updateDocument("products", id, { photoSrc });
+      if (photoSrc !== undefined) {
+        if (
+          typeof photoSrc === "string" &&
+          !!photoSrc &&
+          (!isEditing || (editingData as any).photoSrc !== photoSrc)
+        ) {
+          const response = await fetch(photoSrc);
+          const blob = await response.blob();
+          photoSrc = await uploadFile(id, "photo.png", blob);
+        }
+
+        await updateDocument(dataType, id, { photoSrc });
       }
 
       setAlertInfo({
@@ -238,11 +248,13 @@ export default function RegisterPopUp({
       });
     } else if (dataType === "products") {
       const _editingData = editingData as Product | undefined;
-      setData({
+      const newData: any = {
         name: _editingData?.name || "",
         price: _editingData?.price.toFixed(2).replace(".", ",") || "",
-        photoSrc: _editingData?.photoSrc || "",
-      });
+      };
+      if (!!_editingData?.photoSrc) newData.photoSrc = _editingData.photoSrc;
+
+      setData(newData);
     } else {
       _close();
     }
@@ -322,7 +334,7 @@ export default function RegisterPopUp({
                       pattern: "^[A-Z0-9]{7}$",
                       title:
                         "A placa deve conter 7 caracteres (letras ou dígitos)",
-                      maxlength: 7,
+                      maxLength: 7,
                     }}
                     required
                     value={data.plate}
@@ -367,7 +379,7 @@ export default function RegisterPopUp({
                       } deve conter ${
                         data.type === "Física" ? "11" : "14"
                       } dígitos`,
-                      maxlength: data.type === "Física" ? 11 : 14,
+                      maxLength: data.type === "Física" ? 11 : 14,
                     }}
                     required
                     value={data.cpfCnpj}
@@ -384,7 +396,7 @@ export default function RegisterPopUp({
                     inputProps={{
                       pattern: "^[0-9]{10,11}$",
                       title: "O telefone deve conter 10 ou 11 dígitos",
-                      maxlength: 11,
+                      maxLength: 11,
                     }}
                     required
                     value={data.phone}
@@ -414,7 +426,7 @@ export default function RegisterPopUp({
                     inputProps={{
                       pattern: "^[0-9]{8}$",
                       title: "O CEP deve possuir 8 dígitos",
-                      maxlength: 8,
+                      maxLength: 8,
                     }}
                     value={data.cep}
                     onChange={(e) => {
@@ -444,7 +456,7 @@ export default function RegisterPopUp({
                 </div>
                 <div className="three-fields-container">
                   <TextField
-                    label="Rua"
+                    label="Logradouro"
                     variant="outlined"
                     type="text"
                     required

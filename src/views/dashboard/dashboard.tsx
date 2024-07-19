@@ -21,6 +21,7 @@ import {
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import InsertPhotoOutlinedIcon from "@mui/icons-material/InsertPhotoOutlined";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
@@ -224,7 +225,7 @@ export default function Dashboard() {
                                 key={`${el.id} ${attr}`}
                                 title={
                                   !(el as any)[attr]
-                                    ? "Este produto não possui imagem"
+                                    ? "Este produto não possui foto"
                                     : ""
                                 }
                               >
@@ -235,7 +236,11 @@ export default function Dashboard() {
                                       setSeePhotoAnchorRef(e.currentTarget);
                                   }}
                                 >
-                                  <InsertPhotoOutlinedIcon />
+                                  {!!(el as any)[attr] ? (
+                                    <InsertPhotoOutlinedIcon />
+                                  ) : (
+                                    <ImageNotSupportedOutlinedIcon />
+                                  )}
                                 </TableCell>
                               </Tooltip>
                             </>
