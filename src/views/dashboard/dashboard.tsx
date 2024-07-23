@@ -39,6 +39,8 @@ import {
   vehicleAttrsTranslator,
   vehicleTypeLabels,
   VehicleType,
+  ClientType,
+  clientTypeLabels,
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
@@ -275,7 +277,10 @@ export default function Dashboard() {
                               vehicleTypeLabels[
                                 (el as any).type as VehicleType
                               ];
-                          else value = "";
+                          else if (dataType === "clients")
+                            value =
+                              clientTypeLabels[(el as any).type as ClientType];
+                          else value = (el as any)[attr];
                         } else value = (el as any)[attr];
 
                         return (

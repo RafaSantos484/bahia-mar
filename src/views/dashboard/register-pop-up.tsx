@@ -34,6 +34,7 @@ import {
   Vehicle,
   VehicleType,
   CollaboratorType,
+  ClientType,
 } from "../../types";
 import { useGlobalState } from "../../global-state-context";
 import { deleteField } from "firebase/firestore";
@@ -115,7 +116,7 @@ export default function RegisterPopUp({
     e.preventDefault();
     if (isWaitingAsync || !globalState) return;
 
-    const { vehicles, clients, products, collaborators } = globalState;
+    const { vehicles, products, collaborators } = globalState;
 
     try {
       setIsWaitingAsync(true);
@@ -149,20 +150,6 @@ export default function RegisterPopUp({
           delete _data.plate;
         }
       } else if (dataType === "clients") {
-        const cpfCnpjIsRegistered = !!clients.find(
-          (c) => c.cpfCnpj === _data.cpfCnpj
-        );
-        const _editingData = editingData as Client;
-        if (
-          cpfCnpjIsRegistered &&
-          (!isEditing || _data.cpfCnpj !== _editingData.cpfCnpj)
-        )
-          return setAlertInfo({
-            severity: "error",
-            message: `O ${_data.type === "Física" ? "CPF" : "CNPJ"} ${
-              data.cpfCnpj
-            } já está cadastrado em outro cliente`,
-          });
       } else if (dataType === "products") {
         const nameIsRegistered = !!products.find((p) => p.name === _data.name);
         const _editingData = editingData as Product;
@@ -289,10 +276,11 @@ export default function RegisterPopUp({
     } else if (dataType === "clients") {
       const _editingData = editingData as Client | undefined;
       setData({
-        type: _editingData?.type || "Física",
+        type: _editingData?.type || ClientType.Individual,
         name: _editingData?.name || "",
         phone: _editingData?.phone || "",
         cpfCnpj: _editingData?.cpfCnpj || "",
+        cep: _editingData?.cep || "",
         city: _editingData?.city || "",
         neighborhood: _editingData?.neighborhood || "",
         street: _editingData?.street || "",
@@ -433,24 +421,24 @@ export default function RegisterPopUp({
                         setData({ ...data, type: e.target.value })
                       }
                     >
-                      <MenuItem value="Física">Física</MenuItem>
-                      <MenuItem value="Jurídica">Jurídica</MenuItem>
+                      <MenuItem value="0">Física</MenuItem>
+                      <MenuItem value="1">Jurídica</MenuItem>
                     </Select>
                   </FormControl>
                   <TextField
-                    label={data.type === "Física" ? "CPF" : "CNPJ"}
+                    label={data.type === ClientType.Individual ? "CPF" : "CNPJ"}
                     variant="outlined"
                     type="text"
                     inputProps={{
                       pattern: `^[0-9A-Z]{${
-                        data.type === "Física" ? 11 : 14
+                        data.type === ClientType.Individual ? 11 : 14
                       }}$`,
                       title: `O ${
-                        data.type === "Física" ? "CPF" : "CNPJ"
+                        data.type === ClientType.Individual ? "CPF" : "CNPJ"
                       } deve conter ${
-                        data.type === "Física" ? "11" : "14"
+                        data.type === ClientType.Individual ? "11" : "14"
                       } caracteres`,
-                      maxLength: data.type === "Física" ? 11 : 14,
+                      maxLength: data.type === ClientType.Individual ? 11 : 14,
                     }}
                     value={data.cpfCnpj}
                     onChange={(e) => {

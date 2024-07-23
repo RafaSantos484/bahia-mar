@@ -49,7 +49,14 @@ export const vehicleAttrsTranslator = {
   plate: "Placa",
 };
 
-export type ClientType = "Física" | "Jurídica";
+export enum ClientType {
+  Individual = "0",
+  Entity = "1",
+}
+export const clientTypeLabels = {
+  "0": "Física",
+  "1": "Jurídica",
+};
 export type Client = {
   id: string;
   type: ClientTypes;
