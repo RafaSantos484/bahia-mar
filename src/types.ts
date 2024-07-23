@@ -1,23 +1,23 @@
 import { Timestamp } from "firebase/firestore";
 
 // export type UserType = "admin" | "employee";
-export enum UserType {
+export enum CollaboratorType {
   Admin = "0",
   Employee = "1",
 }
-export const userTypeLabels = {
+export const collaboratorTypeLabels = {
   "0": "Admin",
-  "1": "Colaborador",
+  "1": "Motorista",
 };
-export type AppUser = {
+export type Collaborator = {
   id: string;
   email: string;
   name: string;
   cpf: string;
-  type: UserType;
+  type: CollaboratorType;
   createdAt: Timestamp;
 };
-export type AppUsers = AppUser[];
+export type Collaborators = Collaborator[];
 export const appUserAttrsTranslator = {
   email: "E-mail",
   name: "Nome",
@@ -25,9 +25,17 @@ export const appUserAttrsTranslator = {
   type: "Tipo",
 };
 
+export enum VehicleType {
+  Car = "0",
+  Motorcycle = "1",
+}
+export const vehicleTypeLabels = {
+  "0": "Carro",
+  "1": "Moto",
+};
 export type Vehicle = {
   id: string;
-  type: string;
+  type: VehicleType;
   brand: string;
   model: string;
   plate: string;

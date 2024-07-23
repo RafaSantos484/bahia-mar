@@ -25,14 +25,16 @@ import {
   ThemeProvider,
   Tooltip,
 } from "@mui/material";
-import {
-  deleteFile,
-  pushDocument,
-  updateDocument,
-  uploadFile,
-} from "../../apis/firebase";
+import { deleteFile, editData, insertData } from "../../apis/firebase";
 import { AlertInfo } from "../../components/custom-alert";
-import { AppUser, Client, Product, Vehicle } from "../../types";
+import {
+  Collaborator,
+  Client,
+  Product,
+  Vehicle,
+  VehicleType,
+  CollaboratorType,
+} from "../../types";
 import { useGlobalState } from "../../global-state-context";
 import { deleteField } from "firebase/firestore";
 
@@ -51,7 +53,7 @@ type Props = {
   close: () => void;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?: Vehicle | Client | Product | AppUser;
+  editingData?: Vehicle | Client | Product | Collaborator;
   fadeTime?: number;
 };
 
@@ -113,89 +115,10 @@ export default function RegisterPopUp({
     e.preventDefault();
     if (isWaitingAsync || !globalState) return;
 
-    const { vehicles, clients, products, appUsers } = globalState;
+    const { vehicles, clients, products, collaborators } = globalState;
 
     try {
-      if (dataType === "vehicles") {
-        const plateIsRegistered = !!vehicles.find(
-          (v) => v.plate === data.plate
-        );
-        const _editingData = editingData as Vehicle;
-        if (
-          plateIsRegistered &&
-          (!isEditing || data.plate !== _editingData.plate)
-        )
-          return setAlertInfo({
-            severity: "error",
-            message: `A placa ${data.plate} já está cadastrada em outro veículo`,
-          });
-      } else if (dataType === "clients") {
-        const cpfCnpjIsRegistered = !!clients.find(
-          (c) => c.cpfCnpj === data.cpfCnpj
-        );
-        const _editingData = editingData as Client;
-        if (
-          cpfCnpjIsRegistered &&
-          (!isEditing || data.cpfCnpj !== _editingData.cpfCnpj)
-        )
-          return setAlertInfo({
-            severity: "error",
-            message: `O ${data.type === "Física" ? "CPF" : "CNPJ"} ${
-              data.cpfCnpj
-            } já está cadastrado em outro cliente`,
-          });
-      } else if (dataType === "products") {
-        const nameIsRegistered = !!products.find((p) => p.name === data.name);
-        const _editingData = editingData as Product;
-        if (nameIsRegistered && (!isEditing || data.name !== _editingData.name))
-          return setAlertInfo({
-            severity: "error",
-            message: `O nome ${data.name} já está cadastrada em outro produto`,
-          });
-
-        let numPrice = Number(data.price.replace(",", "."));
-        if (isNaN(numPrice) || numPrice <= 0)
-          return setAlertInfo({
-            severity: "error",
-            message: `Preço inválido`,
-          });
-
-        if (isEditing && !!_editingData.photoSrc && !data.photoSrc) {
-          await deleteFile(_editingData.id, "photo.png");
-          data.photoSrc = deleteField();
-        }
-      } else if (dataType === "appUsers") {
-        if (data.password !== data.confirmPassword)
-          return setAlertInfo({
-            severity: "error",
-            message: `As senhas não coincidem`,
-          });
-
-        const cpfIsRegistered = !!appUsers.find(
-          (user) => user.cpf === data.cpf
-        );
-        const _editingData = editingData as AppUser;
-        if (cpfIsRegistered && (!isEditing || data.cpf !== _editingData.cpf))
-          return setAlertInfo({
-            severity: "error",
-            message: `O cpf ${data.cpf} já está cadastrado em outro usuário`,
-          });
-
-        const emailIsRegistered = !!appUsers.find(
-          (user) => user.email === data.email
-        );
-        if (
-          emailIsRegistered &&
-          (!isEditing || data.email !== _editingData.email)
-        )
-          return setAlertInfo({
-            severity: "error",
-            message: `O email ${data.email} já está cadastrado em outro usuário`,
-          });
-      }
-
       setIsWaitingAsync(true);
-
       const _data: any = {};
       for (const key in data) {
         if (typeof data[key] === "string") data[key] = data[key].trim();
@@ -208,16 +131,112 @@ export default function RegisterPopUp({
       }
       setData({ ...data });
 
-      let id = "";
-      let { photoSrc } = _data;
-      delete _data.photoSrc;
-      if (isEditing) {
-        await updateDocument(dataType, editingData.id, _data);
-        id = editingData.id;
-      } else {
-        id = await pushDocument(dataType, _data);
+      if (dataType === "vehicles") {
+        const plateIsRegistered = !!vehicles.find(
+          (v) => v.plate === _data.plate
+        );
+        const _editingData = editingData as Vehicle;
+        if (
+          plateIsRegistered &&
+          (!isEditing || _data.plate !== _editingData.plate)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `A placa ${_data.plate} já está cadastrada em outro veículo`,
+          });
+
+        if (isEditing && _data.plate === _editingData.plate) {
+          delete _data.plate;
+        }
+      } else if (dataType === "clients") {
+        const cpfCnpjIsRegistered = !!clients.find(
+          (c) => c.cpfCnpj === _data.cpfCnpj
+        );
+        const _editingData = editingData as Client;
+        if (
+          cpfCnpjIsRegistered &&
+          (!isEditing || _data.cpfCnpj !== _editingData.cpfCnpj)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `O ${_data.type === "Física" ? "CPF" : "CNPJ"} ${
+              data.cpfCnpj
+            } já está cadastrado em outro cliente`,
+          });
+      } else if (dataType === "products") {
+        const nameIsRegistered = !!products.find((p) => p.name === _data.name);
+        const _editingData = editingData as Product;
+        if (
+          nameIsRegistered &&
+          (!isEditing || _data.name !== _editingData.name)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `O nome ${_data.name} já está cadastrada em outro produto`,
+          });
+
+        if (isNaN(_data.price) || _data.price <= 0)
+          return setAlertInfo({
+            severity: "error",
+            message: `Preço inválido`,
+          });
+
+        if (isEditing && !!_editingData.photoSrc && !_data.photoSrc) {
+          await deleteFile(_editingData.id, "photo.png");
+          _data.photoSrc = deleteField();
+        }
+      } else if (dataType === "collaborators") {
+        if (_data.password !== _data.confirmPassword)
+          return setAlertInfo({
+            severity: "error",
+            message: `As senhas não coincidem`,
+          });
+
+        const cpfIsRegistered = !!collaborators.find(
+          (c) => c.cpf !== "" && c.cpf === _data.cpf
+        );
+        const _editingData = editingData as Collaborator;
+        if (cpfIsRegistered && (!isEditing || _data.cpf !== _editingData.cpf))
+          return setAlertInfo({
+            severity: "error",
+            message: `O cpf ${_data.cpf} já está cadastrado em outro colaborador`,
+          });
+
+        const emailIsRegistered = !!collaborators.find(
+          (user) => user.email === _data.email
+        );
+        if (
+          emailIsRegistered &&
+          (!isEditing || _data.email !== _editingData.email)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `O email ${_data.email} já está cadastrado em outro colaborador`,
+          });
+
+        delete _data.confirmPassword;
+        if (isEditing) {
+          delete _data.email;
+          delete _data.password;
+          if (_editingData.id === globalState.loggedUser.id) {
+            delete _data.type;
+          }
+          if (_editingData.cpf === _data.cpf) {
+            delete _data.cpf;
+          }
+        }
       }
-      if (photoSrc !== undefined) {
+
+      let err = "";
+      if (isEditing) {
+        // await updateDocument(dataType, editingData.id, _data);
+        err = await editData(dataType, editingData.id, _data);
+      } else {
+        // id = await pushDocument(dataType, _data);
+        err = await insertData(dataType, _data);
+      }
+
+      /*if (photoSrc !== undefined) {
         if (
           typeof photoSrc === "string" &&
           !!photoSrc &&
@@ -229,15 +248,22 @@ export default function RegisterPopUp({
         }
 
         await updateDocument(dataType, id, { photoSrc });
-      }
+      }*/
 
-      setAlertInfo({
-        severity: "success",
-        message: `${dataTypeTranslator[dataType].singular} ${
-          isEditing ? "editado" : "cadastrado"
-        }`,
-      });
-      _close();
+      if (!err) {
+        setAlertInfo({
+          severity: "success",
+          message: `${dataTypeTranslator[dataType].singular} ${
+            isEditing ? "editado" : "cadastrado"
+          }`,
+        });
+        _close();
+      } else {
+        setAlertInfo({
+          severity: "error",
+          message: err,
+        });
+      }
     } catch (e) {
       console.log(e);
       setAlertInfo({
@@ -255,7 +281,7 @@ export default function RegisterPopUp({
     if (dataType === "vehicles") {
       const _editingData = editingData as Vehicle | undefined;
       setData({
-        type: _editingData?.type || "",
+        type: _editingData?.type || VehicleType.Motorcycle,
         brand: _editingData?.brand || "",
         model: _editingData?.model || "",
         plate: _editingData?.plate,
@@ -282,13 +308,13 @@ export default function RegisterPopUp({
       if (!!_editingData?.photoSrc) newData.photoSrc = _editingData.photoSrc;
 
       setData(newData);
-    } else if (dataType === "appUsers") {
-      const _editingData = editingData as AppUser | undefined;
+    } else if (dataType === "collaborators") {
+      const _editingData = editingData as Collaborator | undefined;
       setData({
         name: _editingData?.name || "",
         email: _editingData?.email || "",
         cpf: _editingData?.cpf || "",
-        type: _editingData?.type || "1",
+        type: _editingData?.type || CollaboratorType.Employee,
         password: "",
         confirmPassword: "",
       });
@@ -333,14 +359,20 @@ export default function RegisterPopUp({
             {dataType === "vehicles" && (
               <>
                 <div className="two-fields-container">
-                  <TextField
-                    label="Tipo"
-                    variant="outlined"
-                    type="text"
-                    required
-                    value={data.type}
-                    onChange={(e) => setData({ ...data, type: e.target.value })}
-                  />
+                  <FormControl>
+                    <InputLabel id="vehicle-type-select-label">Tipo</InputLabel>
+                    <Select
+                      labelId="vehicle-type-select-label"
+                      label="Tipo"
+                      value={data.type}
+                      onChange={(e) =>
+                        setData({ ...data, type: e.target.value })
+                      }
+                    >
+                      <MenuItem value="1">Moto</MenuItem>
+                      <MenuItem value="0">Carro</MenuItem>
+                    </Select>
+                  </FormControl>
                   <TextField
                     label="Marca"
                     variant="outlined"
@@ -585,7 +617,7 @@ export default function RegisterPopUp({
                 </div>
               </>
             )}
-            {dataType === "appUsers" && (
+            {dataType === "collaborators" && (
               <>
                 <div className="two-fields-container">
                   <TextField
@@ -627,13 +659,13 @@ export default function RegisterPopUp({
                       </InputLabel>
                       <Select
                         labelId="client-type-select-label"
-                        label="Colaborador"
+                        label="Tipo"
                         value={data.type}
                         onChange={(e) =>
                           setData({ ...data, type: e.target.value })
                         }
                       >
-                        <MenuItem value="1">Colaborador</MenuItem>
+                        <MenuItem value="1">Motorista</MenuItem>
                         <MenuItem value="0">Administrador</MenuItem>
                       </Select>
                     </FormControl>

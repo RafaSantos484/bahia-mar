@@ -27,20 +27,22 @@ import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
 import { useGlobalState } from "../../global-state-context";
 import {
-  AppUser,
+  Collaborator,
   appUserAttrsTranslator,
   Client,
   clientAttrsTranslator,
   Product,
   productAttrsTranslator,
-  UserType,
-  userTypeLabels,
+  CollaboratorType,
+  collaboratorTypeLabels,
   Vehicle,
   vehicleAttrsTranslator,
+  vehicleTypeLabels,
+  VehicleType,
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
-import { deleteDocument, deleteFile, logout } from "../../apis/firebase";
+import { deleteData, logout } from "../../apis/firebase";
 import { formatAddress } from "../../utils";
 
 const themes = createTheme({
@@ -54,25 +56,25 @@ const themes = createTheme({
   },
 });
 
-export type DataType = "vehicles" | "clients" | "products" | "appUsers";
+export type DataType = "vehicles" | "clients" | "products" | "collaborators";
 export const dataTypeTranslator = {
   vehicles: { plural: "Veículos", singular: "Veículo" },
   clients: { plural: "Clientes", singular: "Cliente" },
   products: { plural: "Produtos", singular: "Produto" },
-  appUsers: { plural: "Colaboradores", singular: "Colaborador" },
+  collaborators: { plural: "Colaboradores", singular: "Colaborador" },
 };
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
   clients: clientAttrsTranslator,
   products: productAttrsTranslator,
-  appUsers: appUserAttrsTranslator,
+  collaborators: appUserAttrsTranslator,
 };
 
 const tableCols = {
   vehicles: ["type", "brand", "model", "plate"],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
   products: ["name", "price", "photoSrc"],
-  appUsers: ["name", "email", "cpf", "type"],
+  collaborators: ["name", "email", "cpf", "type"],
 };
 
 let photoSrc = "";
@@ -87,7 +89,10 @@ export default function Dashboard() {
 
   const [dataType, setDataType] = useState<DataType>("vehicles");
   const [creatingDataType, setCreatingDataType] = useState<
-    | { dataType: DataType; editingData?: Vehicle | Client | Product | AppUser }
+    | {
+        dataType: DataType;
+        editingData?: Vehicle | Client | Product | Collaborator;
+      }
     | undefined
   >(undefined);
 
@@ -259,9 +264,19 @@ export default function Dashboard() {
                           value = (el as any)[attr]
                             .toFixed(2)
                             .replace(".", ",");
-                        else if (dataType === "appUsers" && attr === "type")
-                          value = userTypeLabels[(el as any).type as UserType];
-                        else value = (el as any)[attr];
+                        else if (attr === "type") {
+                          if (dataType === "collaborators")
+                            value =
+                              collaboratorTypeLabels[
+                                (el as any).type as CollaboratorType
+                              ];
+                          else if (dataType === "vehicles")
+                            value =
+                              vehicleTypeLabels[
+                                (el as any).type as VehicleType
+                              ];
+                          else value = "";
+                        } else value = (el as any)[attr];
 
                         return (
                           <TableCell key={`${el.id} ${attr}`}>
@@ -295,14 +310,22 @@ export default function Dashboard() {
                               ) {
                                 setIsWaitingAsync(true);
                                 try {
-                                  if ("photoSrc" in el && !!el.photoSrc) {
+                                  /* if ("photoSrc" in el && !!el.photoSrc) {
                                     await deleteFile(el.id, "photo.png");
                                   }
-                                  await deleteDocument(dataType, el.id);
-                                  setAlertInfo({
-                                    severity: "success",
-                                    message: `${dataTypeTranslator[dataType].singular} deletado`,
-                                  });
+                                  await deleteDocument(dataType, el.id); */
+                                  const err = await deleteData(dataType, el.id);
+                                  if (!err) {
+                                    setAlertInfo({
+                                      severity: "success",
+                                      message: `${dataTypeTranslator[dataType].singular} deletado`,
+                                    });
+                                  } else {
+                                    setAlertInfo({
+                                      severity: "error",
+                                      message: err,
+                                    });
+                                  }
                                 } catch (e) {
                                   console.log(e);
                                   setAlertInfo({

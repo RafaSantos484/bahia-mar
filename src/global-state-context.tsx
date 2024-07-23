@@ -6,12 +6,12 @@ import {
   useState,
 } from "react";
 import {
-  AppUser,
+  Collaborator,
   Client,
   Clients,
   Product,
   Products,
-  AppUsers,
+  Collaborators,
   Vehicle,
   Vehicles,
 } from "./types";
@@ -23,11 +23,11 @@ import {
 } from "./apis/firebase";
 
 type GlobalState = {
-  loggedUser: AppUser;
+  loggedUser: Collaborator;
   vehicles: Vehicles;
   clients: Clients;
   products: Products;
-  appUsers: AppUsers;
+  collaborators: Collaborators;
 };
 
 const GlobalStateContext = createContext<GlobalState | null | undefined>(
@@ -40,11 +40,11 @@ type GlobalStateProviderProps = {
   children: ReactNode;
 };
 
-let appUserUnsubscriber: Unsubscribe | undefined = undefined;
+let loggedUserUnsubscriber: Unsubscribe | undefined = undefined;
 let vehiclesUnsubscriber: Unsubscribe | undefined = undefined;
 let clientsUnsubscriber: Unsubscribe | undefined = undefined;
 let productsUnsubscriber: Unsubscribe | undefined = undefined;
-let appUsersUnsubscriber: Unsubscribe | undefined = undefined;
+let collaboratorsUnsubscriber: Unsubscribe | undefined = undefined;
 export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [globalState, setGlobalState] = useState<
     GlobalState | null | undefined
@@ -52,11 +52,15 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
 
   const [user, setUser] = useState<User | null | undefined>(undefined);
 
-  const [loggedUser, setLoggedUser] = useState<AppUser | undefined>(undefined);
+  const [loggedUser, setLoggedUser] = useState<Collaborator | undefined>(
+    undefined
+  );
   const [vehicles, setVehicles] = useState<Vehicles | undefined>(undefined);
   const [clients, setClients] = useState<Clients | undefined>(undefined);
   const [products, setProducts] = useState<Products | undefined>(undefined);
-  const [appUsers, setAppUsers] = useState<AppUsers | undefined>(undefined);
+  const [collaborators, setCollaborators] = useState<Collaborators | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     return onAuthStateChange((_user) => {
@@ -65,22 +69,22 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   }, []);
 
   useEffect(() => {
-    if (!!appUserUnsubscriber) {
-      appUserUnsubscriber();
-      appUserUnsubscriber = undefined;
+    if (!!loggedUserUnsubscriber) {
+      loggedUserUnsubscriber();
+      loggedUserUnsubscriber = undefined;
     }
 
     if (!!user) {
-      appUserUnsubscriber = onDocChange("users", user.uid, (doc) => {
+      loggedUserUnsubscriber = onDocChange("collaborators", user.uid, (doc) => {
         const data = doc.data() as any;
         setLoggedUser({ ...data, id: user.uid });
       });
     }
 
     return () => {
-      if (!!appUserUnsubscriber) {
-        appUserUnsubscriber();
-        appUserUnsubscriber = undefined;
+      if (!!loggedUserUnsubscriber) {
+        loggedUserUnsubscriber();
+        loggedUserUnsubscriber = undefined;
       }
     };
   }, [user]);
@@ -151,24 +155,24 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
     };
   }, [user]);
   useEffect(() => {
-    if (!!appUsersUnsubscriber) {
-      appUsersUnsubscriber();
-      appUsersUnsubscriber = undefined;
+    if (!!collaboratorsUnsubscriber) {
+      collaboratorsUnsubscriber();
+      collaboratorsUnsubscriber = undefined;
     }
 
     if (!!user) {
-      appUsersUnsubscriber = onCollectionChange("users", (collection) => {
+      collaboratorsUnsubscriber = onCollectionChange("collaborators", (collection) => {
         const data = collection.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() } as AppUser)
+          (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
         );
-        setAppUsers(data);
+        setCollaborators(data);
       });
     }
 
     return () => {
-      if (!!appUsersUnsubscriber) {
-        appUsersUnsubscriber();
-        appUsersUnsubscriber = undefined;
+      if (!!collaboratorsUnsubscriber) {
+        collaboratorsUnsubscriber();
+        collaboratorsUnsubscriber = undefined;
       }
     };
   }, [user]);
@@ -181,11 +185,18 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       !vehicles ||
       !clients ||
       !products ||
-      !appUsers
+      !collaborators
     )
       setGlobalState(undefined);
-    else setGlobalState({ loggedUser, vehicles, clients, products, appUsers });
-  }, [user, loggedUser, vehicles, clients, products, appUsers]);
+    else
+      setGlobalState({
+        loggedUser,
+        vehicles,
+        clients,
+        products,
+        collaborators,
+      });
+  }, [user, loggedUser, vehicles, clients, products, collaborators]);
 
   return (
     <GlobalStateContext.Provider value={globalState}>

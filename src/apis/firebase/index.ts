@@ -28,6 +28,8 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { DataType } from "../../views/dashboard/dashboard";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -42,6 +44,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const functions = getFunctions(app);
 
 export async function login(email: string, password: string) {
   const { user } = await signInWithEmailAndPassword(auth, email, password);
@@ -108,4 +111,32 @@ export async function uploadFile(
 export async function deleteFile(path: string, id: string) {
   const storageRef = ref(storage, `${path}/${id}`);
   await deleteObject(storageRef);
+}
+
+export async function insertData(dataType: DataType, data: any) {
+  try {
+    const insertDataCallable = httpsCallable(functions, "insertData");
+    await insertDataCallable({ ...data, dataType });
+  } catch (error: any) {
+    console.log(error);
+    return error.message || "Falha ao tentar criar usuário";
+  }
+}
+export async function editData(dataType: DataType, id: string, data: any) {
+  try {
+    const editDataCallable = httpsCallable(functions, "editData");
+    await editDataCallable({ ...data, id, dataType });
+  } catch (error: any) {
+    console.log(error);
+    return error.message || "Falha ao tentar criar usuário";
+  }
+}
+export async function deleteData(dataType: DataType, id: string) {
+  try {
+    const deleteDataCallable = httpsCallable(functions, "deleteData");
+    await deleteDataCallable({ id, dataType });
+  } catch (error: any) {
+    console.log(error);
+    return error.message || "Falha ao tentar criar usuário";
+  }
 }
