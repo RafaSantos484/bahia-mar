@@ -27,10 +27,14 @@ import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
 import { useGlobalState } from "../../global-state-context";
 import {
+  AppUser,
+  appUserAttrsTranslator,
   Client,
   clientAttrsTranslator,
   Product,
   productAttrsTranslator,
+  UserType,
+  userTypeLabels,
   Vehicle,
   vehicleAttrsTranslator,
 } from "../../types";
@@ -50,22 +54,25 @@ const themes = createTheme({
   },
 });
 
-export type DataType = "vehicles" | "clients" | "products";
+export type DataType = "vehicles" | "clients" | "products" | "appUsers";
 export const dataTypeTranslator = {
-  vehicles: "Veículos",
-  clients: "Clientes",
-  products: "Produtos",
+  vehicles: { plural: "Veículos", singular: "Veículo" },
+  clients: { plural: "Clientes", singular: "Cliente" },
+  products: { plural: "Produtos", singular: "Produto" },
+  appUsers: { plural: "Colaboradores", singular: "Colaborador" },
 };
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
   clients: clientAttrsTranslator,
   products: productAttrsTranslator,
+  appUsers: appUserAttrsTranslator,
 };
 
 const tableCols = {
   vehicles: ["type", "brand", "model", "plate"],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
   products: ["name", "price", "photoSrc"],
+  appUsers: ["name", "email", "cpf", "type"],
 };
 
 let photoSrc = "";
@@ -80,7 +87,8 @@ export default function Dashboard() {
 
   const [dataType, setDataType] = useState<DataType>("vehicles");
   const [creatingDataType, setCreatingDataType] = useState<
-    { dataType: DataType; editingData?: Vehicle | Client | Product } | undefined
+    | { dataType: DataType; editingData?: Vehicle | Client | Product | AppUser }
+    | undefined
   >(undefined);
 
   useEffect(() => {
@@ -94,8 +102,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const slicedDataType = dataTypeTranslator[dataType].slice(0, -1);
 
   console.log(globalState);
 
@@ -164,7 +170,7 @@ export default function Dashboard() {
                 {Object.entries(dataTypeTranslator).map(
                   ([type, translatedType]) => (
                     <MenuItem key={type} value={type}>
-                      {translatedType}
+                      {translatedType.plural}
                     </MenuItem>
                   )
                 )}
@@ -176,7 +182,7 @@ export default function Dashboard() {
               color="primary"
               disabled={isWaitingAsync}
               onClick={() => setCreatingDataType({ dataType })}
-            >{`Cadastrar ${slicedDataType}`}</Button>
+            >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
           </div>
 
           <TableContainer component={Paper}>
@@ -220,30 +226,28 @@ export default function Dashboard() {
                       {tableCols[dataType].map((attr) => {
                         if (attr === "photoSrc") {
                           return (
-                            <>
-                              <Tooltip
-                                key={`${el.id} ${attr}`}
-                                title={
-                                  !(el as any)[attr]
-                                    ? "Este produto não possui foto"
-                                    : ""
-                                }
+                            <Tooltip
+                              key={`${el.id} ${attr}`}
+                              title={
+                                !(el as any)[attr]
+                                  ? "Este produto não possui foto"
+                                  : ""
+                              }
+                            >
+                              <TableCell
+                                onMouseEnter={(e) => {
+                                  photoSrc = (el as any)[attr];
+                                  if (!isWaitingAsync && !!(el as any)[attr])
+                                    setSeePhotoAnchorRef(e.currentTarget);
+                                }}
                               >
-                                <TableCell
-                                  onMouseEnter={(e) => {
-                                    photoSrc = (el as any)[attr];
-                                    if (!isWaitingAsync && !!(el as any)[attr])
-                                      setSeePhotoAnchorRef(e.currentTarget);
-                                  }}
-                                >
-                                  {!!(el as any)[attr] ? (
-                                    <InsertPhotoOutlinedIcon />
-                                  ) : (
-                                    <ImageNotSupportedOutlinedIcon />
-                                  )}
-                                </TableCell>
-                              </Tooltip>
-                            </>
+                                {!!(el as any)[attr] ? (
+                                  <InsertPhotoOutlinedIcon />
+                                ) : (
+                                  <ImageNotSupportedOutlinedIcon />
+                                )}
+                              </TableCell>
+                            </Tooltip>
                           );
                         }
 
@@ -255,6 +259,8 @@ export default function Dashboard() {
                           value = (el as any)[attr]
                             .toFixed(2)
                             .replace(".", ",");
+                        else if (dataType === "appUsers" && attr === "type")
+                          value = userTypeLabels[(el as any).type as UserType];
                         else value = (el as any)[attr];
 
                         return (
@@ -295,13 +301,15 @@ export default function Dashboard() {
                                   await deleteDocument(dataType, el.id);
                                   setAlertInfo({
                                     severity: "success",
-                                    message: `${slicedDataType} deletado`,
+                                    message: `${dataTypeTranslator[dataType].singular} deletado`,
                                   });
                                 } catch (e) {
                                   console.log(e);
                                   setAlertInfo({
                                     severity: "error",
-                                    message: `Falha ao tentar Deletar ${slicedDataType.toLocaleLowerCase()}`,
+                                    message: `Falha ao tentar Deletar ${dataTypeTranslator[
+                                      dataType
+                                    ].singular.toLocaleLowerCase()}`,
                                   });
                                 } finally {
                                   setIsWaitingAsync(false);

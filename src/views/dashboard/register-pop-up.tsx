@@ -32,7 +32,7 @@ import {
   uploadFile,
 } from "../../apis/firebase";
 import { AlertInfo } from "../../components/custom-alert";
-import { Client, Product, Vehicle } from "../../types";
+import { AppUser, Client, Product, Vehicle } from "../../types";
 import { useGlobalState } from "../../global-state-context";
 import { deleteField } from "firebase/firestore";
 
@@ -51,7 +51,7 @@ type Props = {
   close: () => void;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?: Vehicle | Client | Product;
+  editingData?: Vehicle | Client | Product | AppUser;
   fadeTime?: number;
 };
 
@@ -73,7 +73,6 @@ export default function RegisterPopUp({
 }: Props) {
   const _fadeTime = fadeTime || 200;
   const isEditing = !!editingData;
-  const slicedDataType = dataTypeTranslator[dataType].slice(0, -1);
   const globalState = useGlobalState();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,7 +113,7 @@ export default function RegisterPopUp({
     e.preventDefault();
     if (isWaitingAsync || !globalState) return;
 
-    const { vehicles, clients, products } = globalState;
+    const { vehicles, clients, products, appUsers } = globalState;
 
     try {
       if (dataType === "vehicles") {
@@ -151,7 +150,7 @@ export default function RegisterPopUp({
         if (nameIsRegistered && (!isEditing || data.name !== _editingData.name))
           return setAlertInfo({
             severity: "error",
-            message: `O nome ${data.plate} já está cadastrada em outro produto`,
+            message: `O nome ${data.name} já está cadastrada em outro produto`,
           });
 
         let numPrice = Number(data.price.replace(",", "."));
@@ -165,6 +164,34 @@ export default function RegisterPopUp({
           await deleteFile(_editingData.id, "photo.png");
           data.photoSrc = deleteField();
         }
+      } else if (dataType === "appUsers") {
+        if (data.password !== data.confirmPassword)
+          return setAlertInfo({
+            severity: "error",
+            message: `As senhas não coincidem`,
+          });
+
+        const cpfIsRegistered = !!appUsers.find(
+          (user) => user.cpf === data.cpf
+        );
+        const _editingData = editingData as AppUser;
+        if (cpfIsRegistered && (!isEditing || data.cpf !== _editingData.cpf))
+          return setAlertInfo({
+            severity: "error",
+            message: `O cpf ${data.cpf} já está cadastrado em outro usuário`,
+          });
+
+        const emailIsRegistered = !!appUsers.find(
+          (user) => user.email === data.email
+        );
+        if (
+          emailIsRegistered &&
+          (!isEditing || data.email !== _editingData.email)
+        )
+          return setAlertInfo({
+            severity: "error",
+            message: `O email ${data.email} já está cadastrado em outro usuário`,
+          });
       }
 
       setIsWaitingAsync(true);
@@ -185,8 +212,6 @@ export default function RegisterPopUp({
       let { photoSrc } = _data;
       delete _data.photoSrc;
       if (isEditing) {
-        // if (photoSrc === (editingData as any).photoSrc) photoSrc = "";
-
         await updateDocument(dataType, editingData.id, _data);
         id = editingData.id;
       } else {
@@ -208,7 +233,9 @@ export default function RegisterPopUp({
 
       setAlertInfo({
         severity: "success",
-        message: `${slicedDataType} ${isEditing ? "editado" : "cadastrado"}`,
+        message: `${dataTypeTranslator[dataType].singular} ${
+          isEditing ? "editado" : "cadastrado"
+        }`,
       });
       _close();
     } catch (e) {
@@ -217,7 +244,7 @@ export default function RegisterPopUp({
         severity: "error",
         message: `Falha ao tentar ${
           isEditing ? "editar" : "cadastrar"
-        } ${slicedDataType.toLocaleLowerCase()}`,
+        } ${dataTypeTranslator[dataType].singular.toLocaleLowerCase()}`,
       });
     } finally {
       setIsWaitingAsync(false);
@@ -255,13 +282,23 @@ export default function RegisterPopUp({
       if (!!_editingData?.photoSrc) newData.photoSrc = _editingData.photoSrc;
 
       setData(newData);
+    } else if (dataType === "appUsers") {
+      const _editingData = editingData as AppUser | undefined;
+      setData({
+        name: _editingData?.name || "",
+        email: _editingData?.email || "",
+        cpf: _editingData?.cpf || "",
+        type: _editingData?.type || "1",
+        password: "",
+        confirmPassword: "",
+      });
     } else {
       _close();
     }
     // eslint-disable-next-line
   }, [dataType]);
 
-  if (!data) return <></>;
+  if (!data || !globalState) return <></>;
 
   return (
     <div
@@ -273,7 +310,7 @@ export default function RegisterPopUp({
       <ThemeProvider theme={themes}>
         <div className="register-pop-up-container">
           <div className="header-container">
-            <span>{`Cadastrar ${slicedDataType}`}</span>
+            <span>{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</span>
             <IconButton
               color="secondary"
               className="close-btn"
@@ -373,19 +410,20 @@ export default function RegisterPopUp({
                     variant="outlined"
                     type="text"
                     inputProps={{
-                      pattern: `^[0-9]{${data.type === "Física" ? 11 : 14}}$`,
+                      pattern: `^[0-9A-Z]{${
+                        data.type === "Física" ? 11 : 14
+                      }}$`,
                       title: `O ${
                         data.type === "Física" ? "CPF" : "CNPJ"
                       } deve conter ${
                         data.type === "Física" ? "11" : "14"
-                      } dígitos`,
+                      } caracteres`,
                       maxLength: data.type === "Física" ? 11 : 14,
                     }}
-                    required
                     value={data.cpfCnpj}
                     onChange={(e) => {
-                      let { value } = e.target;
-                      value = value.replace(/[^0-9]/g, "");
+                      let value = e.target.value.toUpperCase();
+                      value = value.replace(/[^A-Z0-9]/g, "");
                       setData({ ...data, cpfCnpj: value });
                     }}
                   />
@@ -545,6 +583,112 @@ export default function RegisterPopUp({
                     </Tooltip>
                   )}
                 </div>
+              </>
+            )}
+            {dataType === "appUsers" && (
+              <>
+                <div className="two-fields-container">
+                  <TextField
+                    className="textfield"
+                    label="E-mail"
+                    type="email"
+                    variant="outlined"
+                    fullWidth
+                    required
+                    disabled={isEditing}
+                    value={data.email}
+                    onChange={(e) =>
+                      setData({ ...data, email: e.target.value.trim() })
+                    }
+                  />
+                  <TextField
+                    label="Nome"
+                    variant="outlined"
+                    type="text"
+                    required
+                    value={data.name}
+                    onChange={(e) => setData({ ...data, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="two-fields-container">
+                  <Tooltip
+                    title={
+                      editingData?.id === globalState.loggedUser.id
+                        ? "Você não pode alterar seu próprio tipo de usuário"
+                        : ""
+                    }
+                  >
+                    <FormControl
+                      disabled={editingData?.id === globalState.loggedUser.id}
+                    >
+                      <InputLabel id="client-type-select-label">
+                        Tipo
+                      </InputLabel>
+                      <Select
+                        labelId="client-type-select-label"
+                        label="Colaborador"
+                        value={data.type}
+                        onChange={(e) =>
+                          setData({ ...data, type: e.target.value })
+                        }
+                      >
+                        <MenuItem value="1">Colaborador</MenuItem>
+                        <MenuItem value="0">Administrador</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+                  <TextField
+                    label="CPF"
+                    variant="outlined"
+                    type="text"
+                    inputProps={{
+                      pattern: `^[0-9A-Z]{11}$`,
+                      title: `O CPF deve conter 11 caracteres`,
+                      maxLength: 11,
+                    }}
+                    value={data.cpf}
+                    onChange={(e) => {
+                      let value = e.target.value.toUpperCase();
+                      value = value.replace(/[^A-Z0-9]/g, "");
+                      setData({ ...data, cpf: value });
+                    }}
+                  />
+                </div>
+
+                {!isEditing && (
+                  <div className="two-fields-container">
+                    <TextField
+                      className="textfield"
+                      label="Senha"
+                      type="password"
+                      variant="outlined"
+                      fullWidth
+                      required
+                      inputProps={{ minLength: 6, maxLength: 15 }}
+                      value={data.password}
+                      onChange={(e) =>
+                        setData({ ...data, password: e.target.value.trim() })
+                      }
+                    />
+                    <TextField
+                      className="textfield"
+                      label="Confirmar senha"
+                      type="password"
+                      variant="outlined"
+                      fullWidth
+                      required
+                      inputProps={{ minLength: 6, maxLength: 15 }}
+                      value={data.confirmPassword}
+                      onChange={(e) =>
+                        setData({
+                          ...data,
+                          confirmPassword: e.target.value.trim(),
+                        })
+                      }
+                    />
+                  </div>
+                )}
               </>
             )}
 

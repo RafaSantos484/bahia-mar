@@ -1,12 +1,28 @@
 import { Timestamp } from "firebase/firestore";
 
-export type UserType = "admin" | "employee";
+// export type UserType = "admin" | "employee";
+export enum UserType {
+  Admin = "0",
+  Employee = "1",
+}
+export const userTypeLabels = {
+  "0": "Admin",
+  "1": "Colaborador",
+};
 export type AppUser = {
   id: string;
   email: string;
   name: string;
+  cpf: string;
   type: UserType;
   createdAt: Timestamp;
+};
+export type AppUsers = AppUser[];
+export const appUserAttrsTranslator = {
+  email: "E-mail",
+  name: "Nome",
+  cpf: "CPF",
+  type: "Tipo",
 };
 
 export type Vehicle = {

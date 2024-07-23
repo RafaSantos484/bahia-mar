@@ -11,6 +11,7 @@ import {
   Clients,
   Product,
   Products,
+  AppUsers,
   Vehicle,
   Vehicles,
 } from "./types";
@@ -26,6 +27,7 @@ type GlobalState = {
   vehicles: Vehicles;
   clients: Clients;
   products: Products;
+  appUsers: AppUsers;
 };
 
 const GlobalStateContext = createContext<GlobalState | null | undefined>(
@@ -42,6 +44,7 @@ let appUserUnsubscriber: Unsubscribe | undefined = undefined;
 let vehiclesUnsubscriber: Unsubscribe | undefined = undefined;
 let clientsUnsubscriber: Unsubscribe | undefined = undefined;
 let productsUnsubscriber: Unsubscribe | undefined = undefined;
+let appUsersUnsubscriber: Unsubscribe | undefined = undefined;
 export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [globalState, setGlobalState] = useState<
     GlobalState | null | undefined
@@ -53,6 +56,7 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [vehicles, setVehicles] = useState<Vehicles | undefined>(undefined);
   const [clients, setClients] = useState<Clients | undefined>(undefined);
   const [products, setProducts] = useState<Products | undefined>(undefined);
+  const [appUsers, setAppUsers] = useState<AppUsers | undefined>(undefined);
 
   useEffect(() => {
     return onAuthStateChange((_user) => {
@@ -69,7 +73,7 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
     if (!!user) {
       appUserUnsubscriber = onDocChange("users", user.uid, (doc) => {
         const data = doc.data() as any;
-        setLoggedUser({ ...data, id: user.uid, email: user.email });
+        setLoggedUser({ ...data, id: user.uid });
       });
     }
 
@@ -146,6 +150,28 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       }
     };
   }, [user]);
+  useEffect(() => {
+    if (!!appUsersUnsubscriber) {
+      appUsersUnsubscriber();
+      appUsersUnsubscriber = undefined;
+    }
+
+    if (!!user) {
+      appUsersUnsubscriber = onCollectionChange("users", (collection) => {
+        const data = collection.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as AppUser)
+        );
+        setAppUsers(data);
+      });
+    }
+
+    return () => {
+      if (!!appUsersUnsubscriber) {
+        appUsersUnsubscriber();
+        appUsersUnsubscriber = undefined;
+      }
+    };
+  }, [user]);
 
   useEffect(() => {
     if (user === null) setGlobalState(null);
@@ -154,11 +180,12 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       !loggedUser ||
       !vehicles ||
       !clients ||
-      !products
+      !products ||
+      !appUsers
     )
       setGlobalState(undefined);
-    else setGlobalState({ loggedUser, vehicles, clients, products });
-  }, [user, loggedUser, vehicles, clients, products]);
+    else setGlobalState({ loggedUser, vehicles, clients, products, appUsers });
+  }, [user, loggedUser, vehicles, clients, products, appUsers]);
 
   return (
     <GlobalStateContext.Provider value={globalState}>
