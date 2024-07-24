@@ -97,6 +97,41 @@
       align-self: flex-end;
     }
   }
+
+  .products-container {
+    display: grid;
+    row-gap: 1.5vh;
+    column-gap: 1vw;
+    margin-bottom: 2vh;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 200px;
+
+      .product-img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        margin-bottom: 1vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .set-quantity-container {
+        margin-top: 1vh;
+        display: flex;
+        align-items: center;
+
+        * {
+          border-radius: 0;
+          margin: 0 0.3vw;
+        }
+      }
+    }
+  }
 }
 
 .divider-container {

@@ -99,3 +99,26 @@ export const productAttrsTranslator = {
   name: "Nome",
   price: "Preço",
 };
+
+export type TempClient = {
+  name: string;
+  phone: string;
+  cep: string;
+  city: string;
+  neighborhood: string;
+  street: string;
+  number: string;
+  complement: string;
+};
+export type Sale = {
+  id: string;
+  collaboratorId: string;
+  vehicleId: string;
+  client: string | TempClient;
+  products: { [id: string]: { name: string; price: number; quantity: number } };
+};
+export type Sales = Sale[];
+export const saleAttrsTranslator = {
+  name: "Nome",
+  price: "Preço",
+};

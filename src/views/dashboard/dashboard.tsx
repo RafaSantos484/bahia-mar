@@ -41,6 +41,8 @@ import {
   VehicleType,
   ClientType,
   clientTypeLabels,
+  saleAttrsTranslator,
+  Sale,
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
@@ -58,8 +60,14 @@ const themes = createTheme({
   },
 });
 
-export type DataType = "vehicles" | "clients" | "products" | "collaborators";
+export type DataType =
+  | "vehicles"
+  | "clients"
+  | "products"
+  | "collaborators"
+  | "sales";
 export const dataTypeTranslator = {
+  sales: { plural: "Vendas", singular: "Venda" },
   clients: { plural: "Clientes", singular: "Cliente" },
   collaborators: { plural: "Colaboradores", singular: "Colaborador" },
   products: { plural: "Produtos", singular: "Produto" },
@@ -70,9 +78,11 @@ const attrsTranslator = {
   clients: clientAttrsTranslator,
   products: productAttrsTranslator,
   collaborators: appUserAttrsTranslator,
+  sales: saleAttrsTranslator,
 };
 
 const tableCols = {
+  sales: [],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
   collaborators: ["name", "email", "cpf", "type"],
   products: ["name", "price", "photoSrc"],
@@ -89,11 +99,11 @@ export default function Dashboard() {
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
 
-  const [dataType, setDataType] = useState<DataType>("clients");
+  const [dataType, setDataType] = useState<DataType>("sales");
   const [creatingDataType, setCreatingDataType] = useState<
     | {
         dataType: DataType;
-        editingData?: Vehicle | Client | Product | Collaborator;
+        editingData?: Vehicle | Client | Product | Collaborator | Sale;
       }
     | undefined
   >(undefined);

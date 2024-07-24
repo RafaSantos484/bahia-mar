@@ -9,14 +9,21 @@ import {
 import HighlightOffOutlinedIcon from "@mui/icons-material/HighlightOffOutlined";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import CancelIcon from "@mui/icons-material/Cancel";
+import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from "@mui/icons-material/Add";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { DataType, dataTypeTranslator } from "./dashboard";
 import "./register-pop-up.scss";
 import { blobToString, resizeImage, sleep } from "../../utils";
 import {
   Button,
+  Card,
+  Checkbox,
   createTheme,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   IconButton,
   InputLabel,
   MenuItem,
@@ -40,8 +47,10 @@ import {
   VehicleType,
   CollaboratorType,
   ClientType,
+  Sale,
 } from "../../types";
 import { useGlobalState } from "../../global-state-context";
+import Logo from "../../assets/logo.png";
 
 const themes = createTheme({
   palette: {
@@ -58,7 +67,7 @@ type Props = {
   close: () => void;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?: Vehicle | Client | Product | Collaborator;
+  editingData?: Vehicle | Client | Product | Collaborator | Sale;
   fadeTime?: number;
 };
 
@@ -304,6 +313,14 @@ export default function RegisterPopUp({
         password: "",
         confirmPassword: "",
       });
+    } else if (dataType === "sales") {
+      const _editingData = editingData as Sale | undefined;
+      setData({
+        collaboratorId: _editingData?.collaboratorId || "",
+        vehicleId: _editingData?.vehicleId || "",
+        client: _editingData?.client || "",
+        products: _editingData?.products || {},
+      });
     } else {
       _close();
     }
@@ -312,6 +329,7 @@ export default function RegisterPopUp({
 
   if (!data || !globalState) return <></>;
 
+  console.log(data);
   return (
     <div
       className="global-absolute-fullscreen-container"
@@ -710,6 +728,285 @@ export default function RegisterPopUp({
                     />
                   </div>
                 )}
+              </>
+            )}
+
+            {dataType === "sales" && (
+              <>
+                <Divider text="Informações da venda" />
+
+                <div className="two-fields-container">
+                  <FormControl required>
+                    <InputLabel id="collaborator-select-label">
+                      Funcionário
+                    </InputLabel>
+                    <Select
+                      labelId="collaborator-select-label"
+                      label="Funcionário"
+                      value={data.collaboratorId}
+                      onChange={(e) =>
+                        setData({ ...data, collaboratorId: e.target.value })
+                      }
+                    >
+                      {globalState.collaborators.map((c) => (
+                        <MenuItem
+                          key={c.id}
+                          value={c.id}
+                        >{`${c.name} - ${c.email}`}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl required>
+                    <InputLabel id="vehicle-select-label">Veículo</InputLabel>
+                    <Select
+                      labelId="vehicle-select-label"
+                      label="Veículo"
+                      value={data.vehicleId}
+                      onChange={(e) =>
+                        setData({ ...data, vehicleId: e.target.value })
+                      }
+                    >
+                      {globalState.vehicles.map((v) => (
+                        <MenuItem
+                          key={v.id}
+                          value={v.id}
+                        >{`${v.brand} ${v.model} - ${v.plate}`}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+
+                <Divider text="Cliente" />
+
+                <div className="two-fields-container">
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={typeof data.client === "string"}
+                          onChange={(e) => {
+                            const { checked } = e.target;
+                            setData({
+                              ...data,
+                              client: checked
+                                ? ""
+                                : {
+                                    name: "",
+                                    phone: "",
+                                    cep: "",
+                                    city: "",
+                                    neighborhood: "",
+                                    street: "",
+                                    number: "",
+                                    complement: "",
+                                  },
+                            });
+                          }}
+                        />
+                      }
+                      label="Usar cliente cadastrado"
+                      labelPlacement="start"
+                    />
+                  </FormGroup>
+                  <FormControl
+                    disabled={typeof data.client !== "string"}
+                    required
+                  >
+                    <InputLabel id="client-select-label">Cliente</InputLabel>
+                    <Select
+                      labelId="client-select-label"
+                      label="Cliente"
+                      value={typeof data.client === "string" ? data.client : ""}
+                      onChange={(e) =>
+                        setData({ ...data, client: e.target.value })
+                      }
+                    >
+                      {globalState.clients.map((c) => (
+                        <MenuItem key={c.id} value={c.id}>{`${c.name}${
+                          !!c.cpfCnpj ? ` - ${c.cpfCnpj}` : ""
+                        }`}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+
+                {typeof data.client === "object" && (
+                  <>
+                    <div className="two-fields-container">
+                      <TextField
+                        label="Nome"
+                        variant="outlined"
+                        type="text"
+                        required
+                        value={data.client.name}
+                        onChange={(e) => {
+                          data.client.name = e.target.value;
+                          setData({ ...data });
+                        }}
+                      />
+                      <TextField
+                        label="Telefone"
+                        variant="outlined"
+                        type="text"
+                        inputProps={{
+                          pattern: "^[0-9]{10,11}$",
+                          title: "O telefone deve conter 10 ou 11 dígitos",
+                          maxLength: 11,
+                        }}
+                        required
+                        value={data.client.phone}
+                        onChange={(e) => {
+                          let { value } = e.target;
+                          value = value.replace(/[^0-9]/g, "");
+                          data.client.phone = value;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                    <div className="three-fields-container">
+                      <TextField
+                        label="CEP"
+                        variant="outlined"
+                        type="text"
+                        inputProps={{
+                          pattern: "^[0-9]{8}$",
+                          title: "O CEP deve possuir 8 dígitos",
+                          maxLength: 8,
+                        }}
+                        value={data.client.cep}
+                        onChange={(e) => {
+                          let { value } = e.target;
+                          value = value.replace(/[^0-9]/g, "");
+                          data.client.cep = value;
+                          setData({ ...data });
+                        }}
+                      />
+                      <TextField
+                        label="Cidade"
+                        variant="outlined"
+                        type="text"
+                        required
+                        value={data.client.city}
+                        onChange={(e) => {
+                          data.client.city = e.target.value;
+                          setData({ ...data });
+                        }}
+                      />
+                      <TextField
+                        label="Bairro"
+                        variant="outlined"
+                        type="text"
+                        required
+                        value={data.client.neighborhood}
+                        onChange={(e) => {
+                          data.client.neighborhood = e.target.value;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                    <div className="three-fields-container">
+                      <TextField
+                        label="Logradouro"
+                        variant="outlined"
+                        type="text"
+                        required
+                        value={data.client.street}
+                        onChange={(e) => {
+                          data.client.street = e.target.value;
+                          setData({ ...data });
+                        }}
+                      />
+                      <TextField
+                        label="Número"
+                        variant="outlined"
+                        type="text"
+                        value={data.client.number}
+                        onChange={(e) => {
+                          let { value } = e.target;
+                          value = value.replace(/[^0-9]/g, "");
+                          data.client.number = value;
+                          setData({ ...data });
+                        }}
+                      />
+                      <TextField
+                        label="Complemento"
+                        variant="outlined"
+                        type="text"
+                        value={data.client.complement}
+                        onChange={(e) => {
+                          data.client.complement = e.target.value;
+                          setData({ ...data });
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <Divider text="Produtos" />
+
+                <div className="products-container">
+                  {globalState.products.map((p) => (
+                    <Card key={p.id}>
+                      {!!p.photoSrc ? (
+                        <img
+                          className="product-img"
+                          src={p.photoSrc || Logo}
+                          alt={p.name}
+                          draggable={false}
+                        />
+                      ) : (
+                        <div className="product-img">
+                          <ImageNotSupportedOutlinedIcon fontSize="large" />
+                        </div>
+                      )}
+
+                      <span>{p.name}</span>
+                      <span>{`R$ ${p.price
+                        .toFixed(2)
+                        .replace(".", ",")}`}</span>
+
+                      <div className="set-quantity-container">
+                        <IconButton
+                          color="primary"
+                          disabled={
+                            isWaitingAsync || !data.products[p.id]?.quantity
+                          }
+                          onClick={() => {
+                            if (p.id in data.products) {
+                              data.products[p.id].quantity--;
+                              if (data.products[p.id].quantity === 0) {
+                                delete data.products[p.id];
+                              }
+
+                              setData({ ...data });
+                            }
+                          }}
+                        >
+                          <RemoveIcon />
+                        </IconButton>
+                        <span>{data.products[p.id]?.quantity || "0"}</span>
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            if (p.id in data.products) {
+                              data.products[p.id].quantity++;
+                            } else {
+                              data.products[p.id] = {
+                                name: p.name,
+                                price: p.price,
+                                quantity: 1,
+                              };
+                            }
+
+                            setData({ ...data });
+                          }}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               </>
             )}
 

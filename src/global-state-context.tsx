@@ -14,6 +14,8 @@ import {
   Collaborators,
   Vehicle,
   Vehicles,
+  Sales,
+  Sale,
 } from "./types";
 import { Unsubscribe, User } from "firebase/auth";
 import {
@@ -28,6 +30,7 @@ type GlobalState = {
   clients: Clients;
   products: Products;
   collaborators: Collaborators;
+  sales: Sales;
 };
 
 const GlobalStateContext = createContext<GlobalState | null | undefined>(
@@ -45,6 +48,7 @@ let vehiclesUnsubscriber: Unsubscribe | undefined = undefined;
 let clientsUnsubscriber: Unsubscribe | undefined = undefined;
 let productsUnsubscriber: Unsubscribe | undefined = undefined;
 let collaboratorsUnsubscriber: Unsubscribe | undefined = undefined;
+let salesUnsubscriber: Unsubscribe | undefined = undefined;
 export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [globalState, setGlobalState] = useState<
     GlobalState | null | undefined
@@ -61,6 +65,7 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [collaborators, setCollaborators] = useState<Collaborators | undefined>(
     undefined
   );
+  const [sales, setSales] = useState<Sales | undefined>(undefined);
 
   useEffect(() => {
     return onAuthStateChange((_user) => {
@@ -161,18 +166,43 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
     }
 
     if (!!user) {
-      collaboratorsUnsubscriber = onCollectionChange("collaborators", (collection) => {
-        const data = collection.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
-        );
-        setCollaborators(data);
-      });
+      collaboratorsUnsubscriber = onCollectionChange(
+        "collaborators",
+        (collection) => {
+          const data = collection.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
+          );
+          setCollaborators(data);
+        }
+      );
     }
 
     return () => {
       if (!!collaboratorsUnsubscriber) {
         collaboratorsUnsubscriber();
         collaboratorsUnsubscriber = undefined;
+      }
+    };
+  }, [user]);
+  useEffect(() => {
+    if (!!salesUnsubscriber) {
+      salesUnsubscriber();
+      salesUnsubscriber = undefined;
+    }
+
+    if (!!user) {
+      salesUnsubscriber = onCollectionChange("sales", (collection) => {
+        const data = collection.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as Sale)
+        );
+        setSales(data);
+      });
+    }
+
+    return () => {
+      if (!!salesUnsubscriber) {
+        salesUnsubscriber();
+        salesUnsubscriber = undefined;
       }
     };
   }, [user]);
@@ -185,7 +215,8 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       !vehicles ||
       !clients ||
       !products ||
-      !collaborators
+      !collaborators ||
+      !sales
     )
       setGlobalState(undefined);
     else
@@ -195,8 +226,9 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
         clients,
         products,
         collaborators,
+        sales,
       });
-  }, [user, loggedUser, vehicles, clients, products, collaborators]);
+  }, [user, loggedUser, vehicles, clients, products, collaborators, sales]);
 
   return (
     <GlobalStateContext.Provider value={globalState}>
