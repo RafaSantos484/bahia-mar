@@ -91,7 +91,7 @@ export type Product = {
   id: string;
   name: string;
   price: number;
-  photoSrc?: string;
+  photoSrc: string;
   createdAt: Timestamp;
 };
 export type Products = Product[];

@@ -136,6 +136,7 @@ export default function RegisterPopUp({
       }
       setData({ ...data });
 
+      let id: string | undefined = undefined;
       if (dataType === "vehicles") {
         const plateIsRegistered = !!vehicles.find(
           (v) => v.plate === _data.plate
@@ -155,7 +156,7 @@ export default function RegisterPopUp({
         }
       } else if (dataType === "clients") {
       } else if (dataType === "products") {
-        // const _editingData = editingData as Product;
+        const _editingData = editingData as Product;
 
         if (isNaN(_data.price) || _data.price <= 0)
           return setAlertInfo({
@@ -167,6 +168,24 @@ export default function RegisterPopUp({
         /*if (isEditing && !!_editingData.photoSrc && !_data.photoSrc) {
           await deleteFile(_editingData.id, "photo.png");
         }*/
+        if (isEditing) {
+          if (_editingData.photoSrc === _data.photoSrc) {
+            delete _data.photoSrc;
+          } else if (!!_data.photoSrc) {
+            const response = await fetch(_data.photoSrc);
+            const blob = await response.blob();
+            _data.photoSrc = await uploadFile(
+              editingData.id,
+              "photo.png",
+              blob
+            );
+          }
+        } else if (!!_data.photoSrc) {
+          id = generateDocId(dataType);
+          const response = await fetch(_data.photoSrc);
+          const blob = await response.blob();
+          _data.photoSrc = await uploadFile(id, "photo.png", blob);
+        }
       } else if (dataType === "collaborators") {
         if (_data.password !== _data.confirmPassword)
           return setAlertInfo({
@@ -211,46 +230,10 @@ export default function RegisterPopUp({
 
       let err = "";
       if (isEditing) {
-        if (dataType === "products" && !!_data.photoSrc) {
-          if ((editingData as Product).photoSrc === _data.photoSrc) {
-            delete _data.photoSrc;
-          } else {
-            const response = await fetch(_data.photoSrc);
-            const blob = await response.blob();
-            _data.photoSrc = await uploadFile(
-              editingData.id,
-              "photo.png",
-              blob
-            );
-          }
-        }
-
         err = await editData(dataType, editingData.id, _data);
       } else {
-        let id: string | undefined = undefined;
-        if (dataType === "products" && !!_data.photoSrc) {
-          id = generateDocId(dataType);
-          const response = await fetch(_data.photoSrc);
-          const blob = await response.blob();
-          _data.photoSrc = await uploadFile(id, "photo.png", blob);
-        }
-
         err = await insertData(dataType, _data, id);
       }
-
-      /*if (photoSrc !== undefined) {
-        if (
-          typeof photoSrc === "string" &&
-          !!photoSrc &&
-          (!isEditing || (editingData as any).photoSrc !== photoSrc)
-        ) {
-          const response = await fetch(photoSrc);
-          const blob = await response.blob();
-          photoSrc = await uploadFile(id, "photo.png", blob);
-        }
-
-        await updateDocument(dataType, id, { photoSrc });
-      }*/
 
       if (!err) {
         setAlertInfo({
