@@ -113,10 +113,16 @@ export async function deleteFile(path: string, id: string) {
   await deleteObject(storageRef);
 }
 
-export async function insertData(dataType: DataType, data: any) {
+export function generateDocId(path: string) {
+  return doc(collection(db, path)).id;
+}
+
+export async function insertData(dataType: DataType, data: any, id?: string) {
   try {
     const insertDataCallable = httpsCallable(functions, "insertData");
-    await insertDataCallable({ ...data, dataType });
+    data = { ...data, dataType };
+    if (!!id) data.id = id;
+    await insertDataCallable(data);
   } catch (error: any) {
     console.log(error);
     return error.message || "Falha ao tentar criar usuário";

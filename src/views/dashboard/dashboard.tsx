@@ -60,10 +60,10 @@ const themes = createTheme({
 
 export type DataType = "vehicles" | "clients" | "products" | "collaborators";
 export const dataTypeTranslator = {
-  vehicles: { plural: "Veículos", singular: "Veículo" },
   clients: { plural: "Clientes", singular: "Cliente" },
-  products: { plural: "Produtos", singular: "Produto" },
   collaborators: { plural: "Colaboradores", singular: "Colaborador" },
+  products: { plural: "Produtos", singular: "Produto" },
+  vehicles: { plural: "Veículos", singular: "Veículo" },
 };
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
@@ -73,10 +73,10 @@ const attrsTranslator = {
 };
 
 const tableCols = {
-  vehicles: ["type", "brand", "model", "plate"],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
-  products: ["name", "price", "photoSrc"],
   collaborators: ["name", "email", "cpf", "type"],
+  products: ["name", "price", "photoSrc"],
+  vehicles: ["type", "brand", "model", "plate"],
 };
 
 let photoSrc = "";
@@ -89,7 +89,7 @@ export default function Dashboard() {
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
 
-  const [dataType, setDataType] = useState<DataType>("vehicles");
+  const [dataType, setDataType] = useState<DataType>("clients");
   const [creatingDataType, setCreatingDataType] = useState<
     | {
         dataType: DataType;

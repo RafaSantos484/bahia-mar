@@ -1,6 +1,7 @@
 .dashboard-container {
   align-items: center;
   justify-content: center;
+  min-width: 700px;
 
   .content-container {
     width: 80%;
@@ -12,10 +13,11 @@
       align-items: center;
       margin: 2vh 0;
 
+      /*
       .data-type-select-container {
-        width: 15%;
-        min-width: 130px;
+        // width: 15%;
       }
+        */
 
       button {
         height: fit-content;

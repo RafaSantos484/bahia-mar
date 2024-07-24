@@ -25,7 +25,12 @@ import {
   ThemeProvider,
   Tooltip,
 } from "@mui/material";
-import { deleteFile, editData, insertData } from "../../apis/firebase";
+import {
+  editData,
+  generateDocId,
+  insertData,
+  uploadFile,
+} from "../../apis/firebase";
 import { AlertInfo } from "../../components/custom-alert";
 import {
   Collaborator,
@@ -37,7 +42,6 @@ import {
   ClientType,
 } from "../../types";
 import { useGlobalState } from "../../global-state-context";
-import { deleteField } from "firebase/firestore";
 
 const themes = createTheme({
   palette: {
@@ -116,7 +120,7 @@ export default function RegisterPopUp({
     e.preventDefault();
     if (isWaitingAsync || !globalState) return;
 
-    const { vehicles, products, collaborators } = globalState;
+    const { vehicles, collaborators } = globalState;
 
     try {
       setIsWaitingAsync(true);
@@ -151,16 +155,7 @@ export default function RegisterPopUp({
         }
       } else if (dataType === "clients") {
       } else if (dataType === "products") {
-        const nameIsRegistered = !!products.find((p) => p.name === _data.name);
-        const _editingData = editingData as Product;
-        if (
-          nameIsRegistered &&
-          (!isEditing || _data.name !== _editingData.name)
-        )
-          return setAlertInfo({
-            severity: "error",
-            message: `O nome ${_data.name} já está cadastrada em outro produto`,
-          });
+        // const _editingData = editingData as Product;
 
         if (isNaN(_data.price) || _data.price <= 0)
           return setAlertInfo({
@@ -168,10 +163,10 @@ export default function RegisterPopUp({
             message: `Preço inválido`,
           });
 
-        if (isEditing && !!_editingData.photoSrc && !_data.photoSrc) {
+        _data.photoSrc = _data.photoSrc || "";
+        /*if (isEditing && !!_editingData.photoSrc && !_data.photoSrc) {
           await deleteFile(_editingData.id, "photo.png");
-          _data.photoSrc = deleteField();
-        }
+        }*/
       } else if (dataType === "collaborators") {
         if (_data.password !== _data.confirmPassword)
           return setAlertInfo({
@@ -216,11 +211,31 @@ export default function RegisterPopUp({
 
       let err = "";
       if (isEditing) {
-        // await updateDocument(dataType, editingData.id, _data);
+        if (dataType === "products" && !!_data.photoSrc) {
+          if ((editingData as Product).photoSrc === _data.photoSrc) {
+            delete _data.photoSrc;
+          } else {
+            const response = await fetch(_data.photoSrc);
+            const blob = await response.blob();
+            _data.photoSrc = await uploadFile(
+              editingData.id,
+              "photo.png",
+              blob
+            );
+          }
+        }
+
         err = await editData(dataType, editingData.id, _data);
       } else {
-        // id = await pushDocument(dataType, _data);
-        err = await insertData(dataType, _data);
+        let id: string | undefined = undefined;
+        if (dataType === "products" && !!_data.photoSrc) {
+          id = generateDocId(dataType);
+          const response = await fetch(_data.photoSrc);
+          const blob = await response.blob();
+          _data.photoSrc = await uploadFile(id, "photo.png", blob);
+        }
+
+        err = await insertData(dataType, _data, id);
       }
 
       /*if (photoSrc !== undefined) {
@@ -581,7 +596,10 @@ export default function RegisterPopUp({
                     className="clear-btn"
                     color="error"
                     disabled={isWaitingAsync || !data.photoSrc}
-                    onClick={() => setData({ ...data, photoSrc: "" })}
+                    onClick={() => {
+                      delete data.photoSrc;
+                      setData({ ...data });
+                    }}
                   >
                     <CancelIcon />
                   </IconButton>
