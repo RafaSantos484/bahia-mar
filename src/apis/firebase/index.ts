@@ -15,7 +15,6 @@ import {
   DocumentSnapshot,
   getFirestore,
   onSnapshot,
-  query,
   QuerySnapshot,
   serverTimestamp,
   setDoc,
@@ -93,8 +92,7 @@ export function onCollectionChange(
   path: string,
   onValue: (collection: QuerySnapshot<DocumentData>) => void
 ) {
-  const _query = query(collection(db, path));
-  return onSnapshot(_query, onValue);
+  return onSnapshot(collection(db, path), onValue);
 }
 
 export async function uploadFile(

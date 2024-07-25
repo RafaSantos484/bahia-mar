@@ -174,7 +174,10 @@ export default function Dashboard() {
       <ThemeProvider theme={themes}>
         <div className="content-container">
           <div className="upper-table-menu-container">
-            <FormControl className="data-type-select-container">
+            <FormControl
+              className="data-type-select-container"
+              disabled={isWaitingAsync}
+            >
               <InputLabel id="data-type-select-label">
                 Dado da tabela
               </InputLabel>
@@ -304,7 +307,7 @@ export default function Dashboard() {
                             const collaborator = globalState.collaborators.find(
                               (c) => c.id === collaboratorId
                             );
-                            value = collaborator?.name || collaboratorId;
+                            value = collaborator?.name || "Não encontrado";
                           } else if (attr === "vehicle") {
                             const vehicleId = sale.vehicle;
                             const vehicle = globalState.vehicles.find(
@@ -312,7 +315,7 @@ export default function Dashboard() {
                             );
                             value = !!vehicle
                               ? formatVehicle(vehicle)
-                              : vehicleId;
+                              : "Não encontrado";
                           } else if (attr === "client") {
                             if (typeof sale.client === "object") {
                               value = sale.client.name;
@@ -321,7 +324,7 @@ export default function Dashboard() {
                               const client = globalState.clients.find(
                                 (v) => v.id === clientId
                               );
-                              value = client?.name || clientId;
+                              value = client?.name || "Não encontrado";
                             }
                           } else if (attr === "products") {
                             let total = 0;
