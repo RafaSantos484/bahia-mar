@@ -1,6 +1,6 @@
 import Resizer from "react-image-file-resizer";
 
-import { Client } from "./types";
+import { Client, Vehicle } from "./types";
 
 /** A promise that resolves after 'ms' milliseconds */
 export async function sleep(ms: number) {
@@ -17,6 +17,10 @@ export function formatAddress(client: Client) {
   return `${client.street}${!!client.number ? ` ${client.number}` : ""}, ${
     client.neighborhood
   }, ${client.city}`;
+}
+/** Reduces vehicle info into one string */
+export function formatVehicle(vehicle: Vehicle) {
+  return `${vehicle.brand} ${vehicle.model} - ${vehicle.plate}`;
 }
 
 /** Resizes image file */
@@ -48,4 +52,20 @@ export async function blobToString(blob: Blob): Promise<string> {
     };
     reader.readAsDataURL(blob);
   });
+}
+
+export function getTrimmed<T>(obj: T): T {
+  if (typeof obj === "string") {
+    return obj.trim() as T;
+  } else if (obj instanceof Array) {
+    return obj.map(getTrimmed) as T;
+  } else if (typeof obj === "object" && obj !== null) {
+    const trimmedObj: any = {};
+    for (const key in obj) {
+      trimmedObj[key] = getTrimmed(obj[key]);
+    }
+    return trimmedObj;
+  }
+
+  return obj;
 }

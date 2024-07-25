@@ -15,7 +15,13 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 
 import { DataType, dataTypeTranslator } from "./dashboard";
 import "./register-pop-up.scss";
-import { blobToString, resizeImage, sleep } from "../../utils";
+import {
+  blobToString,
+  formatVehicle,
+  getTrimmed,
+  resizeImage,
+  sleep,
+} from "../../utils";
 import {
   Button,
   Card,
@@ -133,17 +139,9 @@ export default function RegisterPopUp({
 
     try {
       setIsWaitingAsync(true);
-      const _data: any = {};
-      for (const key in data) {
-        if (typeof data[key] === "string") data[key] = data[key].trim();
-
-        if (key === "price") {
-          _data[key] = Number(data[key].replace(",", "."));
-        } else {
-          _data[key] = data[key];
-        }
-      }
-      setData({ ...data });
+      const trimmedData = getTrimmed(data);
+      const _data: any = { ...trimmedData };
+      setData(trimmedData);
 
       let id: string | undefined = undefined;
       if (dataType === "vehicles") {
@@ -165,6 +163,7 @@ export default function RegisterPopUp({
         }
       } else if (dataType === "clients") {
       } else if (dataType === "products") {
+        _data.price = Number(_data.price.replace(",", "."));
         const _editingData = editingData as Product;
 
         if (isNaN(_data.price) || _data.price <= 0)
@@ -174,9 +173,6 @@ export default function RegisterPopUp({
           });
 
         _data.photoSrc = _data.photoSrc || "";
-        /*if (isEditing && !!_editingData.photoSrc && !_data.photoSrc) {
-          await deleteFile(_editingData.id, "photo.png");
-        }*/
         if (isEditing) {
           if (_editingData.photoSrc === _data.photoSrc) {
             delete _data.photoSrc;
@@ -234,6 +230,13 @@ export default function RegisterPopUp({
           if (_editingData.cpf === _data.cpf) {
             delete _data.cpf;
           }
+        }
+      } else if (dataType === "sales") {
+        if (Object.keys(_data.products).length === 0) {
+          return setAlertInfo({
+            severity: "warning",
+            message: "Nenhum produto selecionado",
+          });
         }
       }
 
@@ -314,12 +317,11 @@ export default function RegisterPopUp({
         confirmPassword: "",
       });
     } else if (dataType === "sales") {
-      const _editingData = editingData as Sale | undefined;
       setData({
-        collaboratorId: _editingData?.collaboratorId || "",
-        vehicleId: _editingData?.vehicleId || "",
-        client: _editingData?.client || "",
-        products: _editingData?.products || {},
+        collaborator: "",
+        vehicle: "",
+        client: "",
+        products: {},
       });
     } else {
       _close();
@@ -743,9 +745,9 @@ export default function RegisterPopUp({
                     <Select
                       labelId="collaborator-select-label"
                       label="Funcionário"
-                      value={data.collaboratorId}
+                      value={data.collaborator}
                       onChange={(e) =>
-                        setData({ ...data, collaboratorId: e.target.value })
+                        setData({ ...data, collaborator: e.target.value })
                       }
                     >
                       {globalState.collaborators.map((c) => (
@@ -761,16 +763,15 @@ export default function RegisterPopUp({
                     <Select
                       labelId="vehicle-select-label"
                       label="Veículo"
-                      value={data.vehicleId}
+                      value={data.vehicle}
                       onChange={(e) =>
-                        setData({ ...data, vehicleId: e.target.value })
+                        setData({ ...data, vehicle: e.target.value })
                       }
                     >
                       {globalState.vehicles.map((v) => (
-                        <MenuItem
-                          key={v.id}
-                          value={v.id}
-                        >{`${v.brand} ${v.model} - ${v.plate}`}</MenuItem>
+                        <MenuItem key={v.id} value={v.id}>
+                          {formatVehicle(v)}
+                        </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
@@ -992,7 +993,6 @@ export default function RegisterPopUp({
                               data.products[p.id].quantity++;
                             } else {
                               data.products[p.id] = {
-                                name: p.name,
                                 price: p.price,
                                 quantity: 1,
                               };

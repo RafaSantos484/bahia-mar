@@ -112,13 +112,17 @@ export type TempClient = {
 };
 export type Sale = {
   id: string;
-  collaboratorId: string;
-  vehicleId: string;
+  collaborator: string;
+  vehicle: string;
   client: string | TempClient;
-  products: { [id: string]: { name: string; price: number; quantity: number } };
+  products: {
+    [id: string]: { name?: string; price: number; quantity: number };
+  };
 };
 export type Sales = Sale[];
 export const saleAttrsTranslator = {
-  name: "Nome",
-  price: "Preço",
+  collaborator: "Colaborador",
+  vehicle: "Veículo",
+  client: "Cliente",
+  products: "Total (R$)"
 };

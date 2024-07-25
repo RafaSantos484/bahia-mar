@@ -47,7 +47,7 @@ import {
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
 import { deleteData, logout } from "../../apis/firebase";
-import { formatAddress } from "../../utils";
+import { formatAddress, formatVehicle } from "../../utils";
 
 const themes = createTheme({
   palette: {
@@ -82,7 +82,7 @@ const attrsTranslator = {
 };
 
 const tableCols = {
-  sales: [],
+  sales: ["collaborator", "vehicle", "client", "products"],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
   collaborators: ["name", "email", "cpf", "type"],
   products: ["name", "price", "photoSrc"],
@@ -223,11 +223,13 @@ export default function Dashboard() {
                     );
                   })}
 
-                  <Tooltip title="Editar">
-                    <TableCell>
-                      <EditOutlinedIcon />
-                    </TableCell>
-                  </Tooltip>
+                  {dataType !== "sales" && (
+                    <Tooltip title="Editar">
+                      <TableCell>
+                        <EditOutlinedIcon />
+                      </TableCell>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Deletar">
                     <TableCell>
                       <DeleteOutlineOutlinedIcon color="error" />
@@ -268,50 +270,92 @@ export default function Dashboard() {
                           );
                         }
 
-                        let value: string;
+                        let value = "";
 
-                        if (attr === "address")
-                          value = formatAddress(el as Client);
-                        else if (attr === "price")
-                          value = (el as any)[attr]
-                            .toFixed(2)
-                            .replace(".", ",");
-                        else if (attr === "type") {
-                          if (dataType === "collaborators")
+                        if (dataType === "clients") {
+                          if (attr === "address")
+                            value = formatAddress(el as Client);
+                          else if (attr === "type")
+                            value =
+                              clientTypeLabels[
+                                (el as Client).type as ClientType
+                              ];
+                        } else if (dataType === "collaborators") {
+                          if (attr === "type")
                             value =
                               collaboratorTypeLabels[
-                                (el as any).type as CollaboratorType
+                                (el as Collaborator).type as CollaboratorType
                               ];
-                          else if (dataType === "vehicles")
+                        } else if (dataType === "vehicles") {
+                          if (attr === "type")
                             value =
                               vehicleTypeLabels[
-                                (el as any).type as VehicleType
+                                (el as Vehicle).type as VehicleType
                               ];
-                          else if (dataType === "clients")
-                            value =
-                              clientTypeLabels[(el as any).type as ClientType];
-                          else value = (el as any)[attr];
-                        } else value = (el as any)[attr];
+                        } else if (dataType === "products") {
+                          if (attr === "price")
+                            value = (el as Product).price
+                              .toFixed(2)
+                              .replace(".", ",");
+                        } else if (dataType === "sales") {
+                          const sale = el as Sale;
+                          if (attr === "collaborator") {
+                            const collaboratorId = sale.collaborator;
+                            const collaborator = globalState.collaborators.find(
+                              (c) => c.id === collaboratorId
+                            );
+                            value = collaborator?.name || collaboratorId;
+                          } else if (attr === "vehicle") {
+                            const vehicleId = sale.vehicle;
+                            const vehicle = globalState.vehicles.find(
+                              (v) => v.id === vehicleId
+                            );
+                            value = !!vehicle
+                              ? formatVehicle(vehicle)
+                              : vehicleId;
+                          } else if (attr === "client") {
+                            if (typeof sale.client === "object") {
+                              value = sale.client.name;
+                            } else {
+                              const clientId = sale.client;
+                              const client = globalState.clients.find(
+                                (v) => v.id === clientId
+                              );
+                              value = client?.name || clientId;
+                            }
+                          } else if (attr === "products") {
+                            let total = 0;
+                            for (const prod of Object.values(sale.products)) {
+                              total += prod.price * prod.quantity;
+                            }
+                            value = total.toFixed(2).replace(".", ",");
+                          }
+                        }
 
                         return (
                           <TableCell key={`${el.id} ${attr}`}>
-                            {value}
+                            {value || (el as any)[attr]}
                           </TableCell>
                         );
                       })}
-                      <Tooltip title="Editar">
-                        <TableCell>
-                          <Button
-                            color="secondary"
-                            disabled={isWaitingAsync}
-                            onClick={() =>
-                              setCreatingDataType({ dataType, editingData: el })
-                            }
-                          >
-                            <EditOutlinedIcon />
-                          </Button>
-                        </TableCell>
-                      </Tooltip>
+                      {dataType !== "sales" && (
+                        <Tooltip title="Editar">
+                          <TableCell>
+                            <Button
+                              color="secondary"
+                              disabled={isWaitingAsync}
+                              onClick={() =>
+                                setCreatingDataType({
+                                  dataType,
+                                  editingData: el,
+                                })
+                              }
+                            >
+                              <EditOutlinedIcon />
+                            </Button>
+                          </TableCell>
+                        </Tooltip>
+                      )}
                       <Tooltip title="Deletar">
                         <TableCell>
                           <Button
