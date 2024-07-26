@@ -18,6 +18,7 @@ import "./register-pop-up.scss";
 import {
   blobToString,
   formatVehicle,
+  getSaleValue,
   getTrimmed,
   resizeImage,
   sleep,
@@ -54,6 +55,7 @@ import {
   CollaboratorType,
   ClientType,
   Sale,
+  paymentMethodLabels,
 } from "../../types";
 import { useGlobalState } from "../../global-state-context";
 import Logo from "../../assets/logo.png";
@@ -234,10 +236,28 @@ export default function RegisterPopUp({
       } else if (dataType === "sales") {
         if (Object.keys(_data.products).length === 0) {
           return setAlertInfo({
-            severity: "warning",
+            severity: "error",
             message: "Nenhum produto selecionado",
           });
         }
+
+        const saleValue = getSaleValue(_data.products) as number;
+        if (_data.paidFullPrice) {
+          _data.paidValue = saleValue;
+        } else {
+          _data.paidValue = Number(_data.paidValue);
+          if (
+            isNaN(_data.paidValue) ||
+            _data.paidValue < 0 ||
+            _data.paidValue > saleValue
+          ) {
+            return setAlertInfo({
+              severity: "error",
+              message: "Valor pago inválido",
+            });
+          }
+        }
+        delete _data.paidFullPrice;
       }
 
       let err = "";
@@ -320,8 +340,11 @@ export default function RegisterPopUp({
       setData({
         collaborator: "",
         vehicle: "",
+        paymentMethod: "",
         client: "",
         products: {},
+        paidFullPrice: true,
+        paidValue: "",
       });
     } else {
       _close();
@@ -737,7 +760,7 @@ export default function RegisterPopUp({
               <>
                 <Divider text="Informações da venda" />
 
-                <div className="two-fields-container">
+                <div className="three-fields-container">
                   <FormControl required>
                     <InputLabel id="collaborator-select-label">
                       Funcionário
@@ -773,6 +796,27 @@ export default function RegisterPopUp({
                           {formatVehicle(v)}
                         </MenuItem>
                       ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl required>
+                    <InputLabel id="payment-method-select-label">
+                      Mét. de pagamento
+                    </InputLabel>
+                    <Select
+                      labelId="payment-method-select-label"
+                      label="Mét. de pagamento"
+                      value={data.paymentMethod}
+                      onChange={(e) =>
+                        setData({ ...data, paymentMethod: e.target.value })
+                      }
+                    >
+                      {Object.entries(paymentMethodLabels).map(
+                        ([value, label]) => (
+                          <MenuItem key={value} value={value}>
+                            {label}
+                          </MenuItem>
+                        )
+                      )}
                     </Select>
                   </FormControl>
                 </div>
@@ -1006,6 +1050,51 @@ export default function RegisterPopUp({
                       </div>
                     </Card>
                   ))}
+                </div>
+
+                <Divider
+                  text={`Pagamento (Total: R$ ${getSaleValue(
+                    data.products,
+                    true
+                  )})`}
+                />
+
+                <div className="two-fields-container">
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={data.paidFullPrice}
+                          onChange={(e) => {
+                            const { checked } = e.target;
+                            let paidValue = checked ? "" : "0";
+
+                            setData({
+                              ...data,
+                              paidFullPrice: checked,
+                              paidValue,
+                            });
+                          }}
+                        />
+                      }
+                      label="Pagou valor total"
+                      labelPlacement="start"
+                    />
+                  </FormGroup>
+                  <TextField
+                    label="Valor pago"
+                    variant="outlined"
+                    type="text"
+                    required
+                    disabled={data.paidFullPrice}
+                    value={data.paidValue}
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
+                        setData({ ...data, paidValue: value });
+                      }
+                    }}
+                  />
                 </div>
               </>
             )}

@@ -43,11 +43,18 @@ import {
   clientTypeLabels,
   saleAttrsTranslator,
   Sale,
+  paymentMethodLabels,
 } from "../../types";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
 import { deleteData, logout } from "../../apis/firebase";
-import { formatAddress, formatVehicle } from "../../utils";
+import {
+  formatAddress,
+  formatDate,
+  formatVehicle,
+  getSaleValue,
+  roundNumber,
+} from "../../utils";
 
 const themes = createTheme({
   palette: {
@@ -82,7 +89,16 @@ const attrsTranslator = {
 };
 
 const tableCols = {
-  sales: ["collaborator", "vehicle", "client", "products"],
+  sales: [
+    "collaborator",
+    "vehicle",
+    "client",
+    "paymentMethod",
+    "createdAt",
+    "products",
+    "paidValue",
+    "missingValue",
+  ],
   clients: ["type", "name", "phone", "cpfCnpj", "address"],
   collaborators: ["name", "email", "cpf", "type"],
   products: ["name", "price", "photoSrc"],
@@ -274,6 +290,7 @@ export default function Dashboard() {
                         }
 
                         let value = "";
+                        let color = "";
 
                         if (dataType === "clients") {
                           if (attr === "address")
@@ -296,10 +313,11 @@ export default function Dashboard() {
                                 (el as Vehicle).type as VehicleType
                               ];
                         } else if (dataType === "products") {
-                          if (attr === "price")
+                          if (attr === "price") {
                             value = (el as Product).price
                               .toFixed(2)
                               .replace(".", ",");
+                          }
                         } else if (dataType === "sales") {
                           const sale = el as Sale;
                           if (attr === "collaborator") {
@@ -326,17 +344,30 @@ export default function Dashboard() {
                               );
                               value = client?.name || "Não encontrado";
                             }
+                          } else if (attr === "paymentMethod") {
+                            value = paymentMethodLabels[sale.paymentMethod];
+                          } else if (attr === "createdAt") {
+                            value = formatDate(sale.createdAt, true);
                           } else if (attr === "products") {
-                            let total = 0;
-                            for (const prod of Object.values(sale.products)) {
-                              total += prod.price * prod.quantity;
-                            }
-                            value = total.toFixed(2).replace(".", ",");
+                            value = getSaleValue(sale.products, true) as string;
+                          } else if (attr === "paidValue") {
+                            value = sale.paidValue.toFixed(2).replace(".", ",");
+                          } else if (attr === "missingValue") {
+                            const missingValue = Math.abs(
+                              (getSaleValue(sale.products) as number) -
+                                sale.paidValue
+                            );
+
+                            value = missingValue.toFixed(2).replace(".", ",");
+                            color =
+                              roundNumber(missingValue, 2) === 0
+                                ? "green"
+                                : "red";
                           }
                         }
 
                         return (
-                          <TableCell key={`${el.id} ${attr}`}>
+                          <TableCell key={`${el.id} ${attr}`} style={{ color }}>
                             {value || (el as any)[attr]}
                           </TableCell>
                         );

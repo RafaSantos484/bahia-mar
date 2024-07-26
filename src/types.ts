@@ -110,19 +110,38 @@ export type TempClient = {
   number: string;
   complement: string;
 };
+export enum PaymentMethod {
+  Money = "0",
+  Pix = "1",
+  CreditCard = "2",
+  DebitCard = "3",
+}
+export const paymentMethodLabels = {
+  "0": "Dinheiro",
+  "1": "Pix",
+  "2": "Cartão de crédito",
+  "3": "Cartão de débito",
+};
+export type ProductSale = { price: number; quantity: number };
+export type ProductSales = { [productId: string]: ProductSale };
 export type Sale = {
   id: string;
   collaborator: string;
   vehicle: string;
+  paymentMethod: PaymentMethod;
   client: string | TempClient;
-  products: {
-    [id: string]: { name?: string; price: number; quantity: number };
-  };
+  products: ProductSales;
+  paidValue: number;
+  createdAt: Timestamp;
 };
 export type Sales = Sale[];
 export const saleAttrsTranslator = {
   collaborator: "Colaborador",
   vehicle: "Veículo",
   client: "Cliente",
-  products: "Total (R$)"
+  paymentMethod: "Met. de pagamento",
+  createdAt: "Data/Hora",
+  products: "Total (R$)",
+  paidValue: "Valor pago (R$)",
+  missingValue: "Dívida (R$)",
 };
