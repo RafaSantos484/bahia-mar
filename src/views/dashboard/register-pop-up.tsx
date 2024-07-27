@@ -21,6 +21,7 @@ import {
   getSaleValue,
   getTrimmed,
   resizeImage,
+  roundNumber,
   sleep,
 } from "../../utils";
 import {
@@ -142,7 +143,7 @@ export default function RegisterPopUp({
     try {
       setIsWaitingAsync(true);
       const trimmedData = getTrimmed(data);
-      const _data: any = { ...trimmedData };
+      let _data: any = { ...trimmedData };
       setData(trimmedData);
 
       let id: string | undefined = undefined;
@@ -241,11 +242,13 @@ export default function RegisterPopUp({
           });
         }
 
-        const saleValue = getSaleValue(_data.products) as number;
+        const saleValue = getSaleValue(_data.products);
         if (_data.paidFullPrice) {
           _data.paidValue = saleValue;
         } else {
-          _data.paidValue = Number(_data.paidValue);
+          _data.paidValue = roundNumber(
+            Number(_data.paidValue.replace(",", "."))
+          );
           if (
             isNaN(_data.paidValue) ||
             _data.paidValue < 0 ||
@@ -257,7 +260,11 @@ export default function RegisterPopUp({
             });
           }
         }
+
         delete _data.paidFullPrice;
+        if (isEditing) {
+          _data = { paidValue: _data.paidValue };
+        }
       }
 
       let err = "";
@@ -337,14 +344,15 @@ export default function RegisterPopUp({
         confirmPassword: "",
       });
     } else if (dataType === "sales") {
+      const _editingData = editingData as Sale | undefined;
       setData({
         collaborator: "",
         vehicle: "",
         paymentMethod: "",
         client: "",
-        products: {},
-        paidFullPrice: true,
-        paidValue: "",
+        products: _editingData?.products || {},
+        paidFullPrice: !isEditing,
+        paidValue: _editingData?.paidValue.toFixed(2).replace(".", ",") || "",
       });
     } else {
       _close();
@@ -365,7 +373,9 @@ export default function RegisterPopUp({
       <ThemeProvider theme={themes}>
         <div className="register-pop-up-container">
           <div className="header-container">
-            <span>{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</span>
+            <span>{`${isEditing ? "Editar" : "Cadastrar"} ${
+              dataTypeTranslator[dataType].singular
+            }`}</span>
             <IconButton
               color="secondary"
               className="close-btn"
@@ -756,7 +766,7 @@ export default function RegisterPopUp({
               </>
             )}
 
-            {dataType === "sales" && (
+            {dataType === "sales" && !isEditing && (
               <>
                 <Divider text="Informações da venda" />
 
@@ -1097,6 +1107,45 @@ export default function RegisterPopUp({
                   />
                 </div>
               </>
+            )}
+            {dataType === "sales" && isEditing && (
+              <div className="two-fields-container">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={data.paidFullPrice}
+                        onChange={(e) => {
+                          const { checked } = e.target;
+                          let paidValue = checked ? "" : "0";
+
+                          setData({
+                            ...data,
+                            paidFullPrice: checked,
+                            paidValue,
+                          });
+                        }}
+                      />
+                    }
+                    label="Pagou valor total"
+                    labelPlacement="start"
+                  />
+                </FormGroup>
+                <TextField
+                  label="Valor pago"
+                  variant="outlined"
+                  type="text"
+                  required
+                  disabled={data.paidFullPrice}
+                  value={data.paidValue}
+                  onChange={(e) => {
+                    const { value } = e.target;
+                    if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
+                      setData({ ...data, paidValue: value });
+                    }
+                  }}
+                />
+              </div>
             )}
 
             <Button

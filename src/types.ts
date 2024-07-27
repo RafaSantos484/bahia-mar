@@ -140,8 +140,8 @@ export const saleAttrsTranslator = {
   vehicle: "Veículo",
   client: "Cliente",
   paymentMethod: "Met. de pagamento",
-  createdAt: "Data/Hora",
+  createdAt: "Criado em",
   products: "Total (R$)",
-  paidValue: "Valor pago (R$)",
+  paidValue: "pago (R$)",
   missingValue: "Dívida (R$)",
 };

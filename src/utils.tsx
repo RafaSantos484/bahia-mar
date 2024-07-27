@@ -81,16 +81,26 @@ export function getTrimmed<T>(obj: T): T {
   return obj;
 }
 
+export function getSaleValue(products: ProductSales): number;
+export function getSaleValue(
+  products: ProductSales,
+  convertToString: true
+): string;
+export function getSaleValue(
+  products: ProductSales,
+  convertToString: false
+): number;
 export function getSaleValue(products: ProductSales, convertToString = false) {
   let total = 0;
   Object.values(products).forEach((prod) => {
     total += prod.price * prod.quantity;
   });
+  total = roundNumber(total);
 
   return convertToString ? total.toFixed(2).replace(".", ",") : total;
 }
 
-export function roundNumber(num: number, decimalHouses: number = 2): number {
-  const powerOf10 = Number(`1e${decimalHouses}`);
+export function roundNumber(num: number, decimalPlaces: number = 2): number {
+  const powerOf10 = Number(`1e${decimalPlaces}`);
   return Math.round((num + Number.EPSILON) * powerOf10) / powerOf10;
 }

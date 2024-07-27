@@ -53,7 +53,6 @@ import {
   formatDate,
   formatVehicle,
   getSaleValue,
-  roundNumber,
 } from "../../utils";
 
 const themes = createTheme({
@@ -242,13 +241,11 @@ export default function Dashboard() {
                     );
                   })}
 
-                  {dataType !== "sales" && (
-                    <Tooltip title="Editar">
-                      <TableCell>
-                        <EditOutlinedIcon />
-                      </TableCell>
-                    </Tooltip>
-                  )}
+                  <Tooltip title="Editar">
+                    <TableCell>
+                      <EditOutlinedIcon />
+                    </TableCell>
+                  </Tooltip>
                   <Tooltip title="Deletar">
                     <TableCell>
                       <DeleteOutlineOutlinedIcon color="error" />
@@ -262,33 +259,6 @@ export default function Dashboard() {
                   return (
                     <TableRow key={el.id}>
                       {tableCols[dataType].map((attr) => {
-                        if (attr === "photoSrc") {
-                          return (
-                            <Tooltip
-                              key={`${el.id} ${attr}`}
-                              title={
-                                !(el as any)[attr]
-                                  ? "Este produto não possui foto"
-                                  : ""
-                              }
-                            >
-                              <TableCell
-                                onMouseEnter={(e) => {
-                                  photoSrc = (el as any)[attr];
-                                  if (!isWaitingAsync && !!(el as any)[attr])
-                                    setSeePhotoAnchorRef(e.currentTarget);
-                                }}
-                              >
-                                {!!(el as any)[attr] ? (
-                                  <InsertPhotoOutlinedIcon />
-                                ) : (
-                                  <ImageNotSupportedOutlinedIcon />
-                                )}
-                              </TableCell>
-                            </Tooltip>
-                          );
-                        }
-
                         let value = "";
                         let color = "";
 
@@ -313,10 +283,33 @@ export default function Dashboard() {
                                 (el as Vehicle).type as VehicleType
                               ];
                         } else if (dataType === "products") {
-                          if (attr === "price") {
-                            value = (el as Product).price
-                              .toFixed(2)
-                              .replace(".", ",");
+                          const product = el as Product;
+                          if (attr === "photoSrc") {
+                            return (
+                              <Tooltip
+                                key={`${el.id} ${attr}`}
+                                title={
+                                  !product.photoSrc
+                                    ? "Este produto não possui foto"
+                                    : ""
+                                }
+                              >
+                                <TableCell
+                                  onMouseEnter={(e) => {
+                                    if (!isWaitingAsync && !!product.photoSrc)
+                                      setSeePhotoAnchorRef(e.currentTarget);
+                                  }}
+                                >
+                                  {!!product.photoSrc ? (
+                                    <InsertPhotoOutlinedIcon />
+                                  ) : (
+                                    <ImageNotSupportedOutlinedIcon />
+                                  )}
+                                </TableCell>
+                              </Tooltip>
+                            );
+                          } else if (attr === "price") {
+                            value = product.price.toFixed(2).replace(".", ",");
                           }
                         } else if (dataType === "sales") {
                           const sale = el as Sale;
@@ -349,20 +342,15 @@ export default function Dashboard() {
                           } else if (attr === "createdAt") {
                             value = formatDate(sale.createdAt, true);
                           } else if (attr === "products") {
-                            value = getSaleValue(sale.products, true) as string;
+                            value = getSaleValue(sale.products, true);
                           } else if (attr === "paidValue") {
                             value = sale.paidValue.toFixed(2).replace(".", ",");
                           } else if (attr === "missingValue") {
-                            const missingValue = Math.abs(
-                              (getSaleValue(sale.products) as number) -
-                                sale.paidValue
-                            );
+                            const missingValue =
+                              getSaleValue(sale.products) - sale.paidValue;
 
                             value = missingValue.toFixed(2).replace(".", ",");
-                            color =
-                              roundNumber(missingValue, 2) === 0
-                                ? "green"
-                                : "red";
+                            color = missingValue === 0 ? "green" : "red";
                           }
                         }
 
@@ -372,24 +360,22 @@ export default function Dashboard() {
                           </TableCell>
                         );
                       })}
-                      {dataType !== "sales" && (
-                        <Tooltip title="Editar">
-                          <TableCell>
-                            <Button
-                              color="secondary"
-                              disabled={isWaitingAsync}
-                              onClick={() =>
-                                setCreatingDataType({
-                                  dataType,
-                                  editingData: el,
-                                })
-                              }
-                            >
-                              <EditOutlinedIcon />
-                            </Button>
-                          </TableCell>
-                        </Tooltip>
-                      )}
+                      <Tooltip title="Editar">
+                        <TableCell>
+                          <Button
+                            color="secondary"
+                            disabled={isWaitingAsync}
+                            onClick={() =>
+                              setCreatingDataType({
+                                dataType,
+                                editingData: el,
+                              })
+                            }
+                          >
+                            <EditOutlinedIcon />
+                          </Button>
+                        </TableCell>
+                      </Tooltip>
                       <Tooltip title="Deletar">
                         <TableCell>
                           <Button
