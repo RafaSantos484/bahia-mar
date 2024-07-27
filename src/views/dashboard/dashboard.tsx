@@ -296,8 +296,10 @@ export default function Dashboard() {
                               >
                                 <TableCell
                                   onMouseEnter={(e) => {
-                                    if (!isWaitingAsync && !!product.photoSrc)
+                                    if (!isWaitingAsync && !!product.photoSrc) {
+                                      photoSrc = product.photoSrc;
                                       setSeePhotoAnchorRef(e.currentTarget);
+                                    }
                                   }}
                                 >
                                   {!!product.photoSrc ? (
