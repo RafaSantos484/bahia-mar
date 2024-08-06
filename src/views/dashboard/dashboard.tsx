@@ -4,6 +4,7 @@ import {
   Button,
   createTheme,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
@@ -22,6 +23,10 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import InsertPhotoOutlinedIcon from "@mui/icons-material/InsertPhotoOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
+import SettingsIcon from "@mui/icons-material/Settings";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import TableChartIcon from "@mui/icons-material/TableChart";
 
 import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
@@ -62,6 +67,9 @@ const themes = createTheme({
     },
     secondary: {
       main: "#000000",
+    },
+    info: {
+      main: "#ffffff",
     },
   },
 });
@@ -122,6 +130,8 @@ export default function Dashboard() {
       }
     | undefined
   >(undefined);
+  const [isLeftBarOpen, setIsLeftBarOpen] = useState(false);
+  const [selectedPage, setSelectedPage] = useState<"table" | "charts">("table");
 
   useEffect(() => {
     if (globalState === null) navigate("/");
@@ -139,6 +149,7 @@ export default function Dashboard() {
 
   return (
     <div className="global-fullscreen-container dashboard-container">
+      <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
       <Popover
         id="mouse-over-popover"
         disableRestoreFocus
@@ -166,17 +177,6 @@ export default function Dashboard() {
         />
       </Popover>
 
-      <Button
-        style={{ position: "absolute", top: "1vh", left: "1vw" }}
-        variant="contained"
-        color="error"
-        onClick={logout}
-      >
-        SAIR(TEMP)
-      </Button>
-
-      <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
-
       {!!creatingDataType && (
         <RegisterPopUp
           close={() => setCreatingDataType(undefined)}
@@ -188,249 +188,310 @@ export default function Dashboard() {
 
       <ThemeProvider theme={themes}>
         <div className="content-container">
-          <div className="upper-table-menu-container">
-            <FormControl
-              className="data-type-select-container"
-              disabled={isWaitingAsync}
-            >
-              <InputLabel id="data-type-select-label">
-                Dado da tabela
-              </InputLabel>
-              <Select
-                labelId="data-type-select-label"
-                label="Dado da tabela"
-                value={dataType}
-                onChange={(e) => setDataType(e.target.value as DataType)}
+          <div
+            className="left-bar-container"
+            style={{ width: isLeftBarOpen ? "15vw" : "5vw" }}
+          >
+            <div className="buttons-container">
+              <IconButton
+                style={{ alignSelf: "center" }}
+                onClick={() => setIsLeftBarOpen(!isLeftBarOpen)}
+                color="info"
               >
-                {Object.entries(dataTypeTranslator).map(
-                  ([type, translatedType]) => (
-                    <MenuItem key={type} value={type}>
-                      {translatedType.plural}
-                    </MenuItem>
-                  )
-                )}
-              </Select>
-            </FormControl>
+                <MenuIcon />
+              </IconButton>
 
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={isWaitingAsync}
-              onClick={() => setCreatingDataType({ dataType })}
-            >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
+              <Button
+                className="button-container"
+                color={selectedPage === "table" ? "info" : "secondary"}
+                onClick={() => setSelectedPage("table")}
+              >
+                <Tooltip title={isLeftBarOpen ? "" : "Cadastros"}>
+                  <TableChartIcon />
+                </Tooltip>
+                <span>Cadastros</span>
+              </Button>
+            </div>
+
+            <div className="buttons-container">
+              <Button className="button-container" color="info">
+                <Tooltip title={isLeftBarOpen ? "" : "Opções"}>
+                  <SettingsIcon />
+                </Tooltip>
+                <span>Opções</span>
+              </Button>
+              <Button
+                className="button-container"
+                onClick={logout}
+                color="error"
+              >
+                <Tooltip title={isLeftBarOpen ? "" : "Sair"}>
+                  <MeetingRoomIcon />
+                </Tooltip>
+                <span>Sair</span>
+              </Button>
+            </div>
           </div>
 
-          <TableContainer component={Paper}>
-            <Table stickyHeader sx={{ borderColor: "secondary" }}>
-              <TableHead>
-                <TableRow>
-                  {tableCols[dataType].map((attr) => {
-                    if (attr === "photoSrc")
+          <div className="table-container">
+            <div className="upper-table-menu-container">
+              <FormControl
+                className="data-type-select-container"
+                disabled={isWaitingAsync}
+              >
+                <InputLabel id="data-type-select-label">
+                  Dado da tabela
+                </InputLabel>
+                <Select
+                  labelId="data-type-select-label"
+                  label="Dado da tabela"
+                  value={dataType}
+                  onChange={(e) => setDataType(e.target.value as DataType)}
+                >
+                  {Object.entries(dataTypeTranslator).map(
+                    ([type, translatedType]) => (
+                      <MenuItem key={type} value={type}>
+                        {translatedType.plural}
+                      </MenuItem>
+                    )
+                  )}
+                </Select>
+              </FormControl>
+
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={isWaitingAsync}
+                onClick={() => setCreatingDataType({ dataType })}
+              >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
+            </div>
+
+            <TableContainer component={Paper}>
+              <Table stickyHeader sx={{ borderColor: "secondary" }}>
+                <TableHead>
+                  <TableRow>
+                    {tableCols[dataType].map((attr) => {
+                      if (attr === "photoSrc")
+                        return (
+                          <Tooltip key={attr} title="Foto">
+                            <TableCell>
+                              <InsertPhotoOutlinedIcon />
+                            </TableCell>
+                          </Tooltip>
+                        );
+
                       return (
-                        <Tooltip key={attr} title="Foto">
+                        <TableCell key={attr}>
+                          {(attrsTranslator[dataType] as any)[attr]}
+                        </TableCell>
+                      );
+                    })}
+
+                    <Tooltip title="Editar">
+                      <TableCell>
+                        <EditOutlinedIcon />
+                      </TableCell>
+                    </Tooltip>
+                    <Tooltip title="Deletar">
+                      <TableCell>
+                        <DeleteOutlineOutlinedIcon color="error" />
+                      </TableCell>
+                    </Tooltip>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {globalState[dataType].map((el) => {
+                    return (
+                      <TableRow key={el.id}>
+                        {tableCols[dataType].map((attr) => {
+                          let value = "";
+                          let color = "";
+
+                          if (dataType === "clients") {
+                            if (attr === "address")
+                              value = formatAddress(el as Client);
+                            else if (attr === "type")
+                              value =
+                                clientTypeLabels[
+                                  (el as Client).type as ClientType
+                                ];
+                          } else if (dataType === "collaborators") {
+                            if (attr === "type")
+                              value =
+                                collaboratorTypeLabels[
+                                  (el as Collaborator).type as CollaboratorType
+                                ];
+                          } else if (dataType === "vehicles") {
+                            if (attr === "type")
+                              value =
+                                vehicleTypeLabels[
+                                  (el as Vehicle).type as VehicleType
+                                ];
+                          } else if (dataType === "products") {
+                            const product = el as Product;
+                            if (attr === "photoSrc") {
+                              return (
+                                <Tooltip
+                                  key={`${el.id} ${attr}`}
+                                  title={
+                                    !product.photoSrc
+                                      ? "Este produto não possui foto"
+                                      : ""
+                                  }
+                                >
+                                  <TableCell
+                                    onMouseEnter={(e) => {
+                                      if (
+                                        !isWaitingAsync &&
+                                        !!product.photoSrc
+                                      ) {
+                                        photoSrc = product.photoSrc;
+                                        setSeePhotoAnchorRef(e.currentTarget);
+                                      }
+                                    }}
+                                  >
+                                    {!!product.photoSrc ? (
+                                      <InsertPhotoOutlinedIcon />
+                                    ) : (
+                                      <ImageNotSupportedOutlinedIcon />
+                                    )}
+                                  </TableCell>
+                                </Tooltip>
+                              );
+                            } else if (attr === "price") {
+                              value = product.price
+                                .toFixed(2)
+                                .replace(".", ",");
+                            }
+                          } else if (dataType === "sales") {
+                            const sale = el as Sale;
+                            if (attr === "collaborator") {
+                              const collaboratorId = sale.collaborator;
+                              const collaborator =
+                                globalState.collaborators.find(
+                                  (c) => c.id === collaboratorId
+                                );
+                              value = collaborator?.name || "Não encontrado";
+                            } else if (attr === "vehicle") {
+                              const vehicleId = sale.vehicle;
+                              const vehicle = globalState.vehicles.find(
+                                (v) => v.id === vehicleId
+                              );
+                              value = !!vehicle
+                                ? formatVehicle(vehicle)
+                                : "Não encontrado";
+                            } else if (attr === "client") {
+                              if (typeof sale.client === "object") {
+                                value = sale.client.name;
+                              } else {
+                                const clientId = sale.client;
+                                const client = globalState.clients.find(
+                                  (v) => v.id === clientId
+                                );
+                                value = client?.name || "Não encontrado";
+                              }
+                            } else if (attr === "paymentMethod") {
+                              value = paymentMethodLabels[sale.paymentMethod];
+                            } else if (attr === "createdAt") {
+                              value = formatDate(sale.createdAt, true);
+                            } else if (attr === "products") {
+                              value = getSaleValue(sale.products, true);
+                            } else if (attr === "paidValue") {
+                              value = sale.paidValue
+                                .toFixed(2)
+                                .replace(".", ",");
+                            } else if (attr === "missingValue") {
+                              const missingValue =
+                                getSaleValue(sale.products) - sale.paidValue;
+
+                              value = missingValue.toFixed(2).replace(".", ",");
+                              color = missingValue === 0 ? "green" : "red";
+                            }
+                          }
+
+                          return (
+                            <TableCell
+                              key={`${el.id} ${attr}`}
+                              style={{ color }}
+                            >
+                              {value || (el as any)[attr]}
+                            </TableCell>
+                          );
+                        })}
+                        <Tooltip title="Editar">
                           <TableCell>
-                            <InsertPhotoOutlinedIcon />
+                            <Button
+                              color="secondary"
+                              disabled={isWaitingAsync}
+                              onClick={() =>
+                                setCreatingDataType({
+                                  dataType,
+                                  editingData: el,
+                                })
+                              }
+                            >
+                              <EditOutlinedIcon />
+                            </Button>
                           </TableCell>
                         </Tooltip>
-                      );
-
-                    return (
-                      <TableCell key={attr}>
-                        {(attrsTranslator[dataType] as any)[attr]}
-                      </TableCell>
-                    );
-                  })}
-
-                  <Tooltip title="Editar">
-                    <TableCell>
-                      <EditOutlinedIcon />
-                    </TableCell>
-                  </Tooltip>
-                  <Tooltip title="Deletar">
-                    <TableCell>
-                      <DeleteOutlineOutlinedIcon color="error" />
-                    </TableCell>
-                  </Tooltip>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {globalState[dataType].map((el) => {
-                  return (
-                    <TableRow key={el.id}>
-                      {tableCols[dataType].map((attr) => {
-                        let value = "";
-                        let color = "";
-
-                        if (dataType === "clients") {
-                          if (attr === "address")
-                            value = formatAddress(el as Client);
-                          else if (attr === "type")
-                            value =
-                              clientTypeLabels[
-                                (el as Client).type as ClientType
-                              ];
-                        } else if (dataType === "collaborators") {
-                          if (attr === "type")
-                            value =
-                              collaboratorTypeLabels[
-                                (el as Collaborator).type as CollaboratorType
-                              ];
-                        } else if (dataType === "vehicles") {
-                          if (attr === "type")
-                            value =
-                              vehicleTypeLabels[
-                                (el as Vehicle).type as VehicleType
-                              ];
-                        } else if (dataType === "products") {
-                          const product = el as Product;
-                          if (attr === "photoSrc") {
-                            return (
-                              <Tooltip
-                                key={`${el.id} ${attr}`}
-                                title={
-                                  !product.photoSrc
-                                    ? "Este produto não possui foto"
-                                    : ""
-                                }
-                              >
-                                <TableCell
-                                  onMouseEnter={(e) => {
-                                    if (!isWaitingAsync && !!product.photoSrc) {
-                                      photoSrc = product.photoSrc;
-                                      setSeePhotoAnchorRef(e.currentTarget);
-                                    }
-                                  }}
-                                >
-                                  {!!product.photoSrc ? (
-                                    <InsertPhotoOutlinedIcon />
-                                  ) : (
-                                    <ImageNotSupportedOutlinedIcon />
-                                  )}
-                                </TableCell>
-                              </Tooltip>
-                            );
-                          } else if (attr === "price") {
-                            value = product.price.toFixed(2).replace(".", ",");
-                          }
-                        } else if (dataType === "sales") {
-                          const sale = el as Sale;
-                          if (attr === "collaborator") {
-                            const collaboratorId = sale.collaborator;
-                            const collaborator = globalState.collaborators.find(
-                              (c) => c.id === collaboratorId
-                            );
-                            value = collaborator?.name || "Não encontrado";
-                          } else if (attr === "vehicle") {
-                            const vehicleId = sale.vehicle;
-                            const vehicle = globalState.vehicles.find(
-                              (v) => v.id === vehicleId
-                            );
-                            value = !!vehicle
-                              ? formatVehicle(vehicle)
-                              : "Não encontrado";
-                          } else if (attr === "client") {
-                            if (typeof sale.client === "object") {
-                              value = sale.client.name;
-                            } else {
-                              const clientId = sale.client;
-                              const client = globalState.clients.find(
-                                (v) => v.id === clientId
-                              );
-                              value = client?.name || "Não encontrado";
-                            }
-                          } else if (attr === "paymentMethod") {
-                            value = paymentMethodLabels[sale.paymentMethod];
-                          } else if (attr === "createdAt") {
-                            value = formatDate(sale.createdAt, true);
-                          } else if (attr === "products") {
-                            value = getSaleValue(sale.products, true);
-                          } else if (attr === "paidValue") {
-                            value = sale.paidValue.toFixed(2).replace(".", ",");
-                          } else if (attr === "missingValue") {
-                            const missingValue =
-                              getSaleValue(sale.products) - sale.paidValue;
-
-                            value = missingValue.toFixed(2).replace(".", ",");
-                            color = missingValue === 0 ? "green" : "red";
-                          }
-                        }
-
-                        return (
-                          <TableCell key={`${el.id} ${attr}`} style={{ color }}>
-                            {value || (el as any)[attr]}
-                          </TableCell>
-                        );
-                      })}
-                      <Tooltip title="Editar">
-                        <TableCell>
-                          <Button
-                            color="secondary"
-                            disabled={isWaitingAsync}
-                            onClick={() =>
-                              setCreatingDataType({
-                                dataType,
-                                editingData: el,
-                              })
-                            }
-                          >
-                            <EditOutlinedIcon />
-                          </Button>
-                        </TableCell>
-                      </Tooltip>
-                      <Tooltip title="Deletar">
-                        <TableCell>
-                          <Button
-                            color="error"
-                            disabled={isWaitingAsync}
-                            onClick={async () => {
-                              if (
-                                window.confirm(
-                                  "Deseja realmente deletar este item?"
-                                )
-                              ) {
-                                setIsWaitingAsync(true);
-                                try {
-                                  /* if ("photoSrc" in el && !!el.photoSrc) {
+                        <Tooltip title="Deletar">
+                          <TableCell>
+                            <Button
+                              color="error"
+                              disabled={isWaitingAsync}
+                              onClick={async () => {
+                                if (
+                                  window.confirm(
+                                    "Deseja realmente deletar este item?"
+                                  )
+                                ) {
+                                  setIsWaitingAsync(true);
+                                  try {
+                                    /* if ("photoSrc" in el && !!el.photoSrc) {
                                     await deleteFile(el.id, "photo.png");
                                   }
                                   await deleteDocument(dataType, el.id); */
-                                  const err = await deleteData(dataType, el.id);
-                                  if (!err) {
-                                    setAlertInfo({
-                                      severity: "success",
-                                      message: `${dataTypeTranslator[dataType].singular} deletado`,
-                                    });
-                                  } else {
+                                    const err = await deleteData(
+                                      dataType,
+                                      el.id
+                                    );
+                                    if (!err) {
+                                      setAlertInfo({
+                                        severity: "success",
+                                        message: `${dataTypeTranslator[dataType].singular} deletado`,
+                                      });
+                                    } else {
+                                      setAlertInfo({
+                                        severity: "error",
+                                        message: err,
+                                      });
+                                    }
+                                  } catch (e) {
+                                    console.log(e);
                                     setAlertInfo({
                                       severity: "error",
-                                      message: err,
+                                      message: `Falha ao tentar Deletar ${dataTypeTranslator[
+                                        dataType
+                                      ].singular.toLocaleLowerCase()}`,
                                     });
+                                  } finally {
+                                    setIsWaitingAsync(false);
                                   }
-                                } catch (e) {
-                                  console.log(e);
-                                  setAlertInfo({
-                                    severity: "error",
-                                    message: `Falha ao tentar Deletar ${dataTypeTranslator[
-                                      dataType
-                                    ].singular.toLocaleLowerCase()}`,
-                                  });
-                                } finally {
-                                  setIsWaitingAsync(false);
                                 }
-                              }
-                            }}
-                          >
-                            <DeleteOutlineOutlinedIcon />
-                          </Button>
-                        </TableCell>
-                      </Tooltip>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                              }}
+                            >
+                              <DeleteOutlineOutlinedIcon />
+                            </Button>
+                          </TableCell>
+                        </Tooltip>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
         </div>
       </ThemeProvider>
     </div>
