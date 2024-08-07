@@ -13,7 +13,6 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
-import { DataType, dataTypeTranslator } from "./dashboard";
 import "./register-pop-up.scss";
 import {
   blobToString,
@@ -23,7 +22,7 @@ import {
   resizeImage,
   roundNumber,
   sleep,
-} from "../../utils";
+} from "../../../utils";
 import {
   Button,
   Card,
@@ -45,8 +44,8 @@ import {
   generateDocId,
   insertData,
   uploadFile,
-} from "../../apis/firebase";
-import { AlertInfo } from "../../components/custom-alert";
+} from "../../../apis/firebase";
+import { AlertInfo } from "../../../components/custom-alert";
 import {
   Collaborator,
   Client,
@@ -57,9 +56,10 @@ import {
   ClientType,
   Sale,
   paymentMethodLabels,
-} from "../../types";
-import { GlobalState, useGlobalState } from "../../global-state-context";
-import Logo from "../../assets/logo.png";
+} from "../../../types";
+import { GlobalState } from "../../../global-state-context";
+import Logo from "../../../assets/logo.png";
+import { dataTypeTranslator, DataType } from "./registrations";
 
 const themes = createTheme({
   palette: {

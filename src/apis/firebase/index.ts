@@ -28,7 +28,7 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { DataType } from "../../views/dashboard/dashboard";
+import { DataType } from "../../views/dashboard/registrations/registrations";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
