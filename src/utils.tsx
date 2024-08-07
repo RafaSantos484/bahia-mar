@@ -33,6 +33,15 @@ export function formatDate(
   const dayjsDate = dayjs(date);
   return dayjsDate.format(`DD/MM/YYYY${withHours ? "[, às ]HH:mm:ss" : ""}`);
 }
+export function formatIsoDate(
+  date: string | number | Date | Timestamp,
+  format = "YYYY-MM-DD"
+) {
+  if (date instanceof Timestamp) date = date.toDate();
+
+  const dayjsDate = dayjs(date);
+  return dayjsDate.format(format);
+}
 
 /** Resizes image file */
 export function resizeImage(
