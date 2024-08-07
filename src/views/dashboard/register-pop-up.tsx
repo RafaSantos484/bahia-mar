@@ -58,7 +58,7 @@ import {
   Sale,
   paymentMethodLabels,
 } from "../../types";
-import { useGlobalState } from "../../global-state-context";
+import { GlobalState, useGlobalState } from "../../global-state-context";
 import Logo from "../../assets/logo.png";
 
 const themes = createTheme({
@@ -74,6 +74,7 @@ const themes = createTheme({
 
 type Props = {
   close: () => void;
+  globalState: GlobalState;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
   editingData?: Vehicle | Client | Product | Collaborator | Sale;
@@ -91,6 +92,7 @@ function Divider({ text }: { text: string }) {
 
 export default function RegisterPopUp({
   close,
+  globalState,
   dataType,
   setAlertInfo,
   editingData,
@@ -98,13 +100,14 @@ export default function RegisterPopUp({
 }: Props) {
   const _fadeTime = fadeTime || 200;
   const isEditing = !!editingData;
-  const globalState = useGlobalState();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isOpen, setIsOpen] = useState(true);
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
 
   const [data, setData] = useState<any>(undefined);
+
+  const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
 
   async function _close() {
     setIsOpen(false);
@@ -136,7 +139,7 @@ export default function RegisterPopUp({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (isWaitingAsync || !globalState) return;
+    if (isWaitingAsync) return;
 
     const { vehicles, collaborators } = globalState;
 
@@ -346,7 +349,7 @@ export default function RegisterPopUp({
     } else if (dataType === "sales") {
       const _editingData = editingData as Sale | undefined;
       setData({
-        collaborator: "",
+        collaborator: isAdmin ? "" : globalState.loggedUser.id,
         vehicle: "",
         paymentMethod: "",
         client: "",
@@ -360,7 +363,7 @@ export default function RegisterPopUp({
     // eslint-disable-next-line
   }, [dataType]);
 
-  if (!data || !globalState) return <></>;
+  if (!data) return <></>;
 
   console.log(data);
   return (
@@ -707,7 +710,7 @@ export default function RegisterPopUp({
                           setData({ ...data, type: e.target.value })
                         }
                       >
-                        <MenuItem value="1">Motorista</MenuItem>
+                        <MenuItem value="1">Vendedor</MenuItem>
                         <MenuItem value="0">Administrador</MenuItem>
                       </Select>
                     </FormControl>
@@ -770,27 +773,33 @@ export default function RegisterPopUp({
               <>
                 <Divider text="Informações da venda" />
 
-                <div className="three-fields-container">
-                  <FormControl required>
-                    <InputLabel id="collaborator-select-label">
-                      Funcionário
-                    </InputLabel>
-                    <Select
-                      labelId="collaborator-select-label"
-                      label="Funcionário"
-                      value={data.collaborator}
-                      onChange={(e) =>
-                        setData({ ...data, collaborator: e.target.value })
-                      }
-                    >
-                      {globalState.collaborators.map((c) => (
-                        <MenuItem
-                          key={c.id}
-                          value={c.id}
-                        >{`${c.name} - ${c.email}`}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                <div
+                  className={
+                    isAdmin ? "three-fields-container" : "two-fields-container"
+                  }
+                >
+                  {isAdmin && (
+                    <FormControl required>
+                      <InputLabel id="collaborator-select-label">
+                        Funcionário
+                      </InputLabel>
+                      <Select
+                        labelId="collaborator-select-label"
+                        label="Funcionário"
+                        value={data.collaborator}
+                        onChange={(e) =>
+                          setData({ ...data, collaborator: e.target.value })
+                        }
+                      >
+                        {globalState.collaborators.map((c) => (
+                          <MenuItem
+                            key={c.id}
+                            value={c.id}
+                          >{`${c.name} - ${c.email}`}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
                   <FormControl required>
                     <InputLabel id="vehicle-select-label">Veículo</InputLabel>
                     <Select

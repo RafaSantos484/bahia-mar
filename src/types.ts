@@ -1,13 +1,12 @@
 import { Timestamp } from "firebase/firestore";
 
-// export type UserType = "admin" | "employee";
 export enum CollaboratorType {
   Admin = "0",
   Employee = "1",
 }
 export const collaboratorTypeLabels = {
   "0": "Admin",
-  "1": "Motorista",
+  "1": "Entregador",
 };
 export type Collaborator = {
   id: string;

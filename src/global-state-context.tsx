@@ -16,6 +16,7 @@ import {
   Vehicles,
   Sales,
   Sale,
+  CollaboratorType,
 } from "./types";
 import { Unsubscribe, User } from "firebase/auth";
 import {
@@ -24,7 +25,7 @@ import {
   onDocChange,
 } from "./apis/firebase";
 
-type GlobalState = {
+export type GlobalState = {
   loggedUser: Collaborator;
   vehicles: Vehicles;
   clients: Clients;
@@ -165,16 +166,20 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       collaboratorsUnsubscriber = undefined;
     }
 
-    if (!!user) {
-      collaboratorsUnsubscriber = onCollectionChange(
-        "collaborators",
-        (collection) => {
-          const data = collection.docs.map(
-            (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
-          );
-          setCollaborators(data);
-        }
-      );
+    if (!!user && !!loggedUser) {
+      if (loggedUser.type === CollaboratorType.Admin) {
+        collaboratorsUnsubscriber = onCollectionChange(
+          "collaborators",
+          (collection) => {
+            const data = collection.docs.map(
+              (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
+            );
+            setCollaborators(data);
+          }
+        );
+      } else {
+        setCollaborators([]);
+      }
     }
 
     return () => {
@@ -183,7 +188,7 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
         collaboratorsUnsubscriber = undefined;
       }
     };
-  }, [user]);
+  }, [user, loggedUser]);
   useEffect(() => {
     if (!!salesUnsubscriber) {
       salesUnsubscriber();

@@ -146,6 +146,7 @@ export default function Dashboard() {
   }
 
   console.log(globalState);
+  const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
 
   return (
     <div className="global-fullscreen-container dashboard-container">
@@ -180,6 +181,7 @@ export default function Dashboard() {
       {!!creatingDataType && (
         <RegisterPopUp
           close={() => setCreatingDataType(undefined)}
+          globalState={globalState}
           dataType={creatingDataType.dataType}
           setAlertInfo={setAlertInfo}
           editingData={creatingDataType.editingData}
@@ -214,12 +216,12 @@ export default function Dashboard() {
             </div>
 
             <div className="buttons-container">
-              <Button className="button-container" color="info">
+              {/*<Button className="button-container" color="info">
                 <Tooltip title={isLeftBarOpen ? "" : "Opções"}>
                   <SettingsIcon />
                 </Tooltip>
                 <span>Opções</span>
-              </Button>
+              </Button> */}
               <Button
                 className="button-container"
                 onClick={logout}
@@ -235,32 +237,35 @@ export default function Dashboard() {
 
           <div className="table-container">
             <div className="upper-table-menu-container">
-              <FormControl
-                className="data-type-select-container"
-                disabled={isWaitingAsync}
-              >
-                <InputLabel id="data-type-select-label">
-                  Dado da tabela
-                </InputLabel>
-                <Select
-                  labelId="data-type-select-label"
-                  label="Dado da tabela"
-                  value={dataType}
-                  onChange={(e) => setDataType(e.target.value as DataType)}
+              {isAdmin && (
+                <FormControl
+                  className="data-type-select-container"
+                  disabled={isWaitingAsync}
                 >
-                  {Object.entries(dataTypeTranslator).map(
-                    ([type, translatedType]) => (
-                      <MenuItem key={type} value={type}>
-                        {translatedType.plural}
-                      </MenuItem>
-                    )
-                  )}
-                </Select>
-              </FormControl>
+                  <InputLabel id="data-type-select-label">
+                    Dado da tabela
+                  </InputLabel>
+                  <Select
+                    labelId="data-type-select-label"
+                    label="Dado da tabela"
+                    value={dataType}
+                    onChange={(e) => setDataType(e.target.value as DataType)}
+                  >
+                    {Object.entries(dataTypeTranslator).map(
+                      ([type, translatedType]) => (
+                        <MenuItem key={type} value={type}>
+                          {translatedType.plural}
+                        </MenuItem>
+                      )
+                    )}
+                  </Select>
+                </FormControl>
+              )}
 
               <Button
                 variant="contained"
                 color="primary"
+                style={{ marginLeft: "auto" }}
                 disabled={isWaitingAsync}
                 onClick={() => setCreatingDataType({ dataType })}
               >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
@@ -271,7 +276,13 @@ export default function Dashboard() {
                 <TableHead>
                   <TableRow>
                     {tableCols[dataType].map((attr) => {
-                      if (attr === "photoSrc")
+                      if (
+                        dataType === "sales" &&
+                        attr === "collaborator" &&
+                        !isAdmin
+                      ) {
+                        return null;
+                      } else if (attr === "photoSrc")
                         return (
                           <Tooltip key={attr} title="Foto">
                             <TableCell>
@@ -287,16 +298,20 @@ export default function Dashboard() {
                       );
                     })}
 
-                    <Tooltip title="Editar">
-                      <TableCell>
-                        <EditOutlinedIcon />
-                      </TableCell>
-                    </Tooltip>
-                    <Tooltip title="Deletar">
-                      <TableCell>
-                        <DeleteOutlineOutlinedIcon color="error" />
-                      </TableCell>
-                    </Tooltip>
+                    {isAdmin && (
+                      <>
+                        <Tooltip title="Editar">
+                          <TableCell>
+                            <EditOutlinedIcon />
+                          </TableCell>
+                        </Tooltip>
+                        <Tooltip title="Deletar">
+                          <TableCell>
+                            <DeleteOutlineOutlinedIcon color="error" />
+                          </TableCell>
+                        </Tooltip>
+                      </>
+                    )}
                   </TableRow>
                 </TableHead>
 
@@ -365,6 +380,10 @@ export default function Dashboard() {
                                 .replace(".", ",");
                             }
                           } else if (dataType === "sales") {
+                            if (attr === "collaborator" && !isAdmin) {
+                              return null;
+                            }
+
                             const sale = el as Sale;
                             if (attr === "collaborator") {
                               const collaboratorId = sale.collaborator;
@@ -419,72 +438,77 @@ export default function Dashboard() {
                             </TableCell>
                           );
                         })}
-                        <Tooltip title="Editar">
-                          <TableCell>
-                            <Button
-                              color="secondary"
-                              disabled={isWaitingAsync}
-                              onClick={() =>
-                                setCreatingDataType({
-                                  dataType,
-                                  editingData: el,
-                                })
-                              }
-                            >
-                              <EditOutlinedIcon />
-                            </Button>
-                          </TableCell>
-                        </Tooltip>
-                        <Tooltip title="Deletar">
-                          <TableCell>
-                            <Button
-                              color="error"
-                              disabled={isWaitingAsync}
-                              onClick={async () => {
-                                if (
-                                  window.confirm(
-                                    "Deseja realmente deletar este item?"
-                                  )
-                                ) {
-                                  setIsWaitingAsync(true);
-                                  try {
-                                    /* if ("photoSrc" in el && !!el.photoSrc) {
+
+                        {isAdmin && (
+                          <>
+                            <Tooltip title="Editar">
+                              <TableCell>
+                                <Button
+                                  color="secondary"
+                                  disabled={isWaitingAsync}
+                                  onClick={() =>
+                                    setCreatingDataType({
+                                      dataType,
+                                      editingData: el,
+                                    })
+                                  }
+                                >
+                                  <EditOutlinedIcon />
+                                </Button>
+                              </TableCell>
+                            </Tooltip>
+                            <Tooltip title="Deletar">
+                              <TableCell>
+                                <Button
+                                  color="error"
+                                  disabled={isWaitingAsync}
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        "Deseja realmente deletar este item?"
+                                      )
+                                    ) {
+                                      setIsWaitingAsync(true);
+                                      try {
+                                        /* if ("photoSrc" in el && !!el.photoSrc) {
                                     await deleteFile(el.id, "photo.png");
                                   }
                                   await deleteDocument(dataType, el.id); */
-                                    const err = await deleteData(
-                                      dataType,
-                                      el.id
-                                    );
-                                    if (!err) {
-                                      setAlertInfo({
-                                        severity: "success",
-                                        message: `${dataTypeTranslator[dataType].singular} deletado`,
-                                      });
-                                    } else {
-                                      setAlertInfo({
-                                        severity: "error",
-                                        message: err,
-                                      });
+                                        const err = await deleteData(
+                                          dataType,
+                                          el.id
+                                        );
+                                        if (!err) {
+                                          setAlertInfo({
+                                            severity: "success",
+                                            message: `${dataTypeTranslator[dataType].singular} deletado`,
+                                          });
+                                        } else {
+                                          setAlertInfo({
+                                            severity: "error",
+                                            message: err,
+                                          });
+                                        }
+                                      } catch (e) {
+                                        console.log(e);
+                                        setAlertInfo({
+                                          severity: "error",
+                                          message: `Falha ao tentar Deletar ${dataTypeTranslator[
+                                            dataType
+                                          ].singular.toLocaleLowerCase()}`,
+                                        });
+                                      } finally {
+                                        setIsWaitingAsync(false);
+                                      }
                                     }
-                                  } catch (e) {
-                                    console.log(e);
-                                    setAlertInfo({
-                                      severity: "error",
-                                      message: `Falha ao tentar Deletar ${dataTypeTranslator[
-                                        dataType
-                                      ].singular.toLocaleLowerCase()}`,
-                                    });
-                                  } finally {
-                                    setIsWaitingAsync(false);
-                                  }
-                                }
-                              }}
-                            >
-                              <DeleteOutlineOutlinedIcon />
-                            </Button>
-                          </TableCell>
-                        </Tooltip>
+                                  }}
+                                >
+                                  <DeleteOutlineOutlinedIcon />
+                                </Button>
+                              </TableCell>
+                            </Tooltip>
+                          </>
+                        )}
                       </TableRow>
                     );
                   })}
