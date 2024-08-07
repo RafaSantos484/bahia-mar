@@ -11,6 +11,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 // import SettingsIcon from "@mui/icons-material/Settings";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import TableChartIcon from "@mui/icons-material/TableChart";
+import BarChartIcon from "@mui/icons-material/BarChart";
 
 import "./dashboard.scss";
 import LoadingScreen from "../../components/loading-screen";
@@ -18,6 +19,8 @@ import { useGlobalState } from "../../global-state-context";
 
 import { logout } from "../../apis/firebase";
 import { Registrations } from "./registrations/registrations";
+import { Charts } from "./charts/charts";
+import { CollaboratorType } from "../../types";
 
 const themes = createTheme({
   palette: {
@@ -53,6 +56,7 @@ export default function Dashboard() {
   }
 
   console.log(globalState);
+  const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
 
   return (
     <div className="global-fullscreen-container dashboard-container">
@@ -81,6 +85,18 @@ export default function Dashboard() {
                 </Tooltip>
                 <span>Cadastros</span>
               </Button>
+              {isAdmin && (
+                <Button
+                  className="button-container"
+                  color={selectedPage === "charts" ? "info" : "secondary"}
+                  onClick={() => setSelectedPage("charts")}
+                >
+                  <Tooltip title={isLeftBarOpen ? "" : "Relatórios"}>
+                    <BarChartIcon />
+                  </Tooltip>
+                  <span>Relatórios</span>
+                </Button>
+              )}
             </div>
 
             <div className="buttons-container">
@@ -106,6 +122,7 @@ export default function Dashboard() {
           {selectedPage === "table" && (
             <Registrations globalState={globalState} />
           )}
+          {selectedPage === "charts" && <Charts globalState={globalState} />}
         </div>
       </ThemeProvider>
     </div>
