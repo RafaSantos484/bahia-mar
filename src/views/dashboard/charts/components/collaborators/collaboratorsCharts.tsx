@@ -1,6 +1,10 @@
 import {
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   styled,
   Table,
   TableBody,
@@ -17,7 +21,6 @@ import { GlobalState } from "../../../../../global-state-context";
 import "./collaboratorsCharts.scss";
 import { Collaborator, collaboratorTypeLabels } from "../../../../../types";
 import { LineChart } from "@mui/x-charts";
-import { Timestamp } from "firebase/firestore";
 import { formatDate, formatIsoDate } from "../../../../../utils";
 
 type Props = {
@@ -37,6 +40,7 @@ export function CollaboratorsCharts({ globalState }: Props) {
   const [selectedCollaborator, setSelectedCollaborator] = useState<
     Collaborator | undefined
   >(undefined);
+  const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   return (
     <div className="collaborators-charts-container">
@@ -88,24 +92,29 @@ export function CollaboratorsCharts({ globalState }: Props) {
           );
 
           let totalEarning = 0;
-          const salesPerDay: {
-            [month: string]: { total: number; count: number };
+          const salesPerDate: {
+            [date: string]: { total: number; count: number };
           } = {};
           for (const sale of collaboratorSales) {
-            const day = formatIsoDate(sale.createdAt);
-            if (!(day in salesPerDay)) {
-              salesPerDay[day] = { total: 0, count: 0 };
+            const dateFormats = {
+              Dia: "YYYY-MM-DD",
+              Mês: "YYYY-MM",
+              Ano: "YYYY",
+            };
+            const date = formatIsoDate(sale.createdAt, dateFormats[orderBy]);
+            if (!(date in salesPerDate)) {
+              salesPerDate[date] = { total: 0, count: 0 };
             }
 
             totalEarning += sale.paidValue;
-            salesPerDay[day].total += sale.paidValue;
-            salesPerDay[day].count++;
+            salesPerDate[date].total += sale.paidValue;
+            salesPerDate[date].count++;
           }
 
-          const salesPerDayDataset = Object.entries(salesPerDay)
-            .map(([day, { total, count }]) => ({ day, total, count }))
-            .sort((a, b) => a.day.localeCompare(b.day));
-          console.log(salesPerDayDataset);
+          const salesPerDateDataset = Object.entries(salesPerDate)
+            .map(([date, { total, count }]) => ({ date, total, count }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+          // console.log(salesPerDateDataset);
           return (
             <div className="collaborator-report-container">
               <Tooltip title="Voltar">
@@ -117,6 +126,20 @@ export function CollaboratorsCharts({ globalState }: Props) {
                   <ArrowCircleLeftIcon />
                 </IconButton>
               </Tooltip>
+
+              <FormControl className="select-order-by-container">
+                <InputLabel id="order-by-select-label">Ordenar por</InputLabel>
+                <Select
+                  labelId="order-by-select-label"
+                  label="Ordenar por"
+                  value={orderBy}
+                  onChange={(e) => setOrderBy(e.target.value as any)}
+                >
+                  <MenuItem value={"Dia"}>Dia</MenuItem>
+                  <MenuItem value={"Mês"}>Mês</MenuItem>
+                  <MenuItem value={"Ano"}>Ano</MenuItem>
+                </Select>
+              </FormControl>
 
               <h1>{selectedCollaborator.name}</h1>
 
@@ -137,14 +160,15 @@ export function CollaboratorsCharts({ globalState }: Props) {
                 <div className="chart-container">
                   <span>Faturamento</span>
                   <LineChart
-                    dataset={salesPerDayDataset}
+                    dataset={salesPerDateDataset}
                     title="Faturamento"
                     xAxis={[
                       {
                         scaleType: "band",
-                        dataKey: "day",
-                        label: "Dia",
-                        valueFormatter: (value: string) => formatDate(value),
+                        dataKey: "date",
+                        label: orderBy,
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
                       },
                     ]}
                     series={[
@@ -157,14 +181,15 @@ export function CollaboratorsCharts({ globalState }: Props) {
                 <div className="chart-container">
                   <span>Vendas</span>
                   <LineChart
-                    dataset={salesPerDayDataset}
+                    dataset={salesPerDateDataset}
                     title="Faturamento"
                     xAxis={[
                       {
                         scaleType: "band",
-                        dataKey: "day",
-                        label: "Dia",
-                        valueFormatter: (value: string) => formatDate(value),
+                        dataKey: "date",
+                        label: orderBy,
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
                       },
                     ]}
                     yAxis={[
@@ -172,6 +197,7 @@ export function CollaboratorsCharts({ globalState }: Props) {
                         id: "count",
                         dataKey: "count",
                         tickMinStep: 1,
+                        min: 0,
                       },
                     ]}
                     series={[
