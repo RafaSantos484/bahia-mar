@@ -111,7 +111,7 @@ export function Registrations({ globalState }: Props) {
     useState<HTMLTableCellElement | null>(null);
 
   return (
-    <div className="table-container">
+    <div className="global-table-container table-container">
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
       {!!creatingDataType && (

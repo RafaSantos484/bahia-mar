@@ -58,7 +58,7 @@ export const clientTypeLabels = {
 };
 export type Client = {
   id: string;
-  type: ClientTypes;
+  type: ClientType;
   name: string;
   phone: string;
   cpfCnpj: string;

@@ -4,9 +4,10 @@ import { useState } from "react";
 import { GlobalState } from "../../../global-state-context";
 import "./charts.scss";
 import { CollaboratorsCharts } from "./components/collaborators/collaboratorsCharts";
+import { ClientsCharts } from "./components/clients/clientsCharts";
 
-type ReportType = "Funcionários";
-const ReportTypeArr: ReportType[] = ["Funcionários"];
+type ReportType = "Funcionários" | "Clientes";
+const ReportTypeArr: ReportType[] = ["Clientes", "Funcionários"];
 
 type Props = {
   globalState: GlobalState;
@@ -14,16 +15,12 @@ type Props = {
 
 export function Charts({ globalState }: Props) {
   const [selectedReport, setSelectedReport] =
-    useState<ReportType>("Funcionários");
-  const [isWaitingAsync, setIsWaitingAsync] = useState(false);
+    useState<ReportType>("Clientes");
 
   return (
     <div className="charts-container">
       <div className="upper-menu-container">
-        <FormControl
-          className="report-type-select-container"
-          disabled={isWaitingAsync}
-        >
+        <FormControl className="report-type-select-container">
           <InputLabel id="report-type-select-label">Relatório</InputLabel>
           <Select
             labelId="data-type-select-label"
@@ -40,6 +37,9 @@ export function Charts({ globalState }: Props) {
         </FormControl>
       </div>
 
+      {selectedReport === "Clientes" && (
+        <ClientsCharts globalState={globalState} />
+      )}
       {selectedReport === "Funcionários" && (
         <CollaboratorsCharts globalState={globalState} />
       )}

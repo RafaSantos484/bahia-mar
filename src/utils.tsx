@@ -1,6 +1,6 @@
 import Resizer from "react-image-file-resizer";
 
-import { Client, ProductSales, Vehicle } from "./types";
+import { Client, ProductSales, Sales, Vehicle } from "./types";
 import { Timestamp } from "firebase/firestore";
 import dayjs from "dayjs";
 
@@ -104,6 +104,33 @@ export function getSaleValue(products: ProductSales, convertToString = false) {
   Object.values(products).forEach((prod) => {
     total += prod.price * prod.quantity;
   });
+  total = roundNumber(total);
+
+  return convertToString ? total.toFixed(2).replace(".", ",") : total;
+}
+
+export function getClientDebt(sales: Sales, clientId: string): number;
+export function getClientDebt(
+  sales: Sales,
+  clientId: string,
+  convertToString: true
+): string;
+export function getClientDebt(
+  sales: Sales,
+  clientId: string,
+  convertToString: false
+): number;
+export function getClientDebt(
+  sales: Sales,
+  clientId: string,
+  convertToString = false
+): number | string {
+  let total = 0;
+  for (const sale of sales) {
+    if (sale.client !== clientId) continue;
+
+    total += getSaleValue(sale.products) - sale.paidValue;
+  }
   total = roundNumber(total);
 
   return convertToString ? total.toFixed(2).replace(".", ",") : total;

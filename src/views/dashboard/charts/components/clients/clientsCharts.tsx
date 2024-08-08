@@ -18,10 +18,10 @@ import { useState } from "react";
 import ArrowCircleLeftIcon from "@mui/icons-material/ArrowCircleLeft";
 
 import { GlobalState } from "../../../../../global-state-context";
-import "./collaboratorsCharts.scss";
-import { Collaborator, collaboratorTypeLabels } from "../../../../../types";
+import "./clientsCharts.scss";
+import { Client, clientTypeLabels } from "../../../../../types";
 import { LineChart } from "@mui/x-charts";
-import { formatIsoDate } from "../../../../../utils";
+import { formatIsoDate, getClientDebt } from "../../../../../utils";
 
 type Props = {
   globalState: GlobalState;
@@ -36,19 +36,19 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export function CollaboratorsCharts({ globalState }: Props) {
-  const [selectedCollaborator, setSelectedCollaborator] = useState<
-    Collaborator | undefined
-  >(undefined);
+export function ClientsCharts({ globalState }: Props) {
+  const [selectedClient, setSelectedClient] = useState<Client | undefined>(
+    undefined
+  );
   const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   return (
     <div className="collaborators-charts-container">
-      {!selectedCollaborator && (
+      {!selectedClient && (
         <>
           <div className="title-container">
-            <h1>Funcionários</h1>
-            <h3>Selecione um funcionário</h3>
+            <h1>Clientes</h1>
+            <h3>Selecione um cliente</h3>
           </div>
           <div className="global-table-container table-container">
             <TableContainer component={Paper}>
@@ -56,24 +56,33 @@ export function CollaboratorsCharts({ globalState }: Props) {
                 <TableHead>
                   <TableRow>
                     <TableCell>Nome</TableCell>
-                    <TableCell>CPF</TableCell>
-                    <TableCell>E-mail</TableCell>
+                    <TableCell>CPF/CNPJ</TableCell>
                     <TableCell>Tipo</TableCell>
+                    <TableCell>Dívida (R$)</TableCell>
                   </TableRow>
                 </TableHead>
 
                 <TableBody>
-                  {globalState.collaborators.map((collaborator) => {
+                  {globalState.clients.map((client) => {
+                    const clientDebt = getClientDebt(
+                      globalState.sales,
+                      client.id,
+                      true
+                    );
                     return (
                       <StyledTableRow
-                        key={collaborator.id}
-                        onClick={() => setSelectedCollaborator(collaborator)}
+                        key={client.id}
+                        onClick={() => setSelectedClient(client)}
                       >
-                        <TableCell>{collaborator.name}</TableCell>
-                        <TableCell>{collaborator.cpf}</TableCell>
-                        <TableCell>{collaborator.email}</TableCell>
-                        <TableCell>
-                          {collaboratorTypeLabels[collaborator.type]}
+                        <TableCell>{client.name}</TableCell>
+                        <TableCell>{client.cpfCnpj}</TableCell>
+                        <TableCell>{clientTypeLabels[client.type]}</TableCell>
+                        <TableCell
+                          style={{
+                            color: clientDebt === "0,00" ? "green" : "red",
+                          }}
+                        >
+                          {clientDebt}
                         </TableCell>
                       </StyledTableRow>
                     );
@@ -85,17 +94,17 @@ export function CollaboratorsCharts({ globalState }: Props) {
         </>
       )}
 
-      {selectedCollaborator &&
+      {selectedClient &&
         (() => {
-          const collaboratorSales = globalState.sales.filter(
-            (sale) => sale.collaborator === selectedCollaborator.id
+          const clientSales = globalState.sales.filter(
+            (sale) => sale.client === selectedClient.id
           );
 
           let totalEarning = 0;
           const salesPerDate: {
             [date: string]: { total: number; count: number };
           } = {};
-          for (const sale of collaboratorSales) {
+          for (const sale of clientSales) {
             const dateFormats = {
               Dia: "YYYY-MM-DD",
               Mês: "YYYY-MM",
@@ -114,14 +123,13 @@ export function CollaboratorsCharts({ globalState }: Props) {
           const salesPerDateDataset = Object.entries(salesPerDate)
             .map(([date, { total, count }]) => ({ date, total, count }))
             .sort((a, b) => a.date.localeCompare(b.date));
-          // console.log(salesPerDateDataset);
           return (
             <div className="collaborator-report-container">
               <Tooltip title="Voltar">
                 <IconButton
                   className="return-btn"
                   color="primary"
-                  onClick={() => setSelectedCollaborator(undefined)}
+                  onClick={() => setSelectedClient(undefined)}
                 >
                   <ArrowCircleLeftIcon />
                 </IconButton>
@@ -141,12 +149,12 @@ export function CollaboratorsCharts({ globalState }: Props) {
                 </Select>
               </FormControl>
 
-              <h1>{selectedCollaborator.name}</h1>
+              <h1>{selectedClient.name}</h1>
 
               <div className="info-container">
                 <div className="info-card">
                   <span>Vendas</span>
-                  <span>{collaboratorSales.length}</span>
+                  <span>{clientSales.length}</span>
                 </div>
                 <div className="info-card">
                   <span>Faturamento</span>
