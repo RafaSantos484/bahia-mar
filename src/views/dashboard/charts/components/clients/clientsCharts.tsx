@@ -18,6 +18,7 @@ import "./clientsCharts.scss";
 import { Client, clientTypeLabels } from "../../../../../types";
 import { formatIsoDate, getClientDebt } from "../../../../../utils";
 import { DateLineChart } from "../../../../../components/date-line-chart";
+import dayjs from "dayjs";
 
 type Props = {
   globalState: GlobalState;
@@ -99,8 +100,17 @@ export function ClientsCharts({ globalState }: Props) {
           const salesPerDay: {
             [day: string]: { total: number; count: number };
           } = {};
+          let minDay = "";
+          let maxDay = "";
           for (const sale of clientSales) {
             const day = formatIsoDate(sale.createdAt);
+            if (!minDay || day < minDay) {
+              minDay = day;
+            }
+            if (!maxDay || day > maxDay) {
+              maxDay = day;
+            }
+
             if (!(day in salesPerDay)) {
               salesPerDay[day] = { total: 0, count: 0 };
             }
@@ -108,6 +118,18 @@ export function ClientsCharts({ globalState }: Props) {
             totalEarning += sale.paidValue;
             salesPerDay[day].total += sale.paidValue;
             salesPerDay[day].count++;
+          }
+
+          if (!!minDay && !!maxDay) {
+            let currDay = dayjs(minDay);
+            const lastDay = dayjs(maxDay);
+            while (!currDay.isSame(lastDay, "day")) {
+              const day = currDay.format("YYYY-MM-DD");
+              if (!(day in salesPerDay) && ![0, 6].includes(currDay.day())) {
+                salesPerDay[day] = { total: 0, count: 0 };
+              }
+              currDay = currDay.add(1, "day");
+            }
           }
 
           const salesPerDayDataset = Object.entries(salesPerDay)

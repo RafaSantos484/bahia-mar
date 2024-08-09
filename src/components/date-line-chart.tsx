@@ -25,12 +25,6 @@ export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
   style = style || {};
 
   xAxis = xAxis.map((axis) => ({ ...axis, label: orderBy }));
-  if (orderBy === "Mês") {
-    dataset = dataset.map((value) => ({
-      ...value,
-      date: value.date.slice(0, 7),
-    }));
-  }
 
   if (orderBy !== "Dia") {
     const salesPerDate: {

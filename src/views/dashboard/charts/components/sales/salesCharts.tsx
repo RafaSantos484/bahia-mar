@@ -8,13 +8,17 @@ import "./salesCharts.scss";
 import { DateLineChart } from "../../../../../components/date-line-chart";
 import { Collaborator } from "../../../../../types";
 import { CustomBarChart } from "../../../../../components/custom-bar-chart";
+import dayjs from "dayjs";
 
 type Props = {
   globalState: GlobalState;
 };
 
 type DateSale = { date: string; value: number };
-type LabelSale = { label: string; value: number };
+type LabelSale = {
+  label: { value: string };
+  value: number;
+};
 
 export function SalesCharts({ globalState }: Props) {
   const [salesPerDateDayset, setSalesPerDayDataset] = useState<DateSale[]>([]);
@@ -26,27 +30,48 @@ export function SalesCharts({ globalState }: Props) {
     const salesPerDay: {
       [day: string]: number;
     } = {};
+    let minDay = "";
+    let maxDay = "";
     for (const sale of globalState.sales) {
       const day = formatIsoDate(sale.createdAt);
+      if (!minDay || day < minDay) {
+        minDay = day;
+      }
+      if (!maxDay || day > maxDay) {
+        maxDay = day;
+      }
+
       if (!(day in salesPerDay)) {
         salesPerDay[day] = sale.paidValue;
       } else salesPerDay[day] += sale.paidValue;
     }
 
-    setSalesPerDayDataset(
-      Object.entries(salesPerDay)
-        .map(([date, value]) => ({ date, value }))
-        .sort((a, b) => a.date.localeCompare(b.date))
-    );
+    if (!!minDay && !!maxDay) {
+      let currDay = dayjs(minDay);
+      const lastDay = dayjs(maxDay);
+      while (!currDay.isSame(lastDay, "day")) {
+        const day = currDay.format("YYYY-MM-DD");
+        if (!(day in salesPerDay) && ![0, 6].includes(currDay.day())) {
+          salesPerDay[day] = 0;
+        }
+        currDay = currDay.add(1, "day");
+      }
+    }
+
+    const salesPerDayArr = Object.entries(salesPerDay)
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    setSalesPerDayDataset(salesPerDayArr);
   }, [globalState.sales]);
 
   useEffect(() => {
-    const salesPerCollaboratorId: {
+    const _salesPerCollaborator: {
       [id: string]: { name: string; value: number };
     } = {};
     const collaborators: { [id: string]: Collaborator | null } = {};
     for (const sale of globalState.sales) {
-      if (!(sale.collaborator in salesPerCollaboratorId)) {
+      if (!(sale.collaborator in _salesPerCollaborator)) {
         let collaborator: Collaborator | null = null;
         if (sale.collaborator in collaborators) {
           collaborator = collaborators[sale.collaborator];
@@ -58,21 +83,22 @@ export function SalesCharts({ globalState }: Props) {
         }
 
         if (!!collaborator) {
-          salesPerCollaboratorId[sale.collaborator] = {
+          _salesPerCollaborator[sale.collaborator] = {
             name: collaborator.name,
             value: sale.paidValue,
           };
         }
-      } else salesPerCollaboratorId[sale.collaborator].value += sale.paidValue;
+      } else _salesPerCollaborator[sale.collaborator].value += sale.paidValue;
     }
 
     setSalesPerCollaborator(
-      Object.entries(salesPerCollaboratorId)
-        .map(([id, { name, value }]) => ({ label: `${name}_${id}`, value }))
-        .sort((a, b) => b.label.localeCompare(a.label))
+      Object.values(_salesPerCollaborator)
+        .map(({ name, value }) => ({ label: { value: name }, value }))
+        .sort((a, b) => b.value - a.value)
     );
   }, [globalState.collaborators, globalState.sales]);
 
+  console.log(salesPerCollaborator);
   return (
     <div className="sales-charts-container">
       <div className="charts-container">
@@ -99,12 +125,12 @@ export function SalesCharts({ globalState }: Props) {
           }
         />
         <CustomBarChart
-          dataset={salesPerCollaborator}
+          dataset={salesPerCollaborator as any}
           xAxis={[
             {
               scaleType: "band",
               dataKey: "label",
-              valueFormatter: (value: string) => value.split("_")[0],
+              valueFormatter: (obj: any) => obj.value,
             },
           ]}
           series={[
