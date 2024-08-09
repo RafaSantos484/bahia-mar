@@ -1,5 +1,6 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { LineChart, LineChartProps } from "@mui/x-charts";
+import { DatasetType } from "@mui/x-charts/internals";
 import { CSSProperties, useState } from "react";
 
 type Props = {
@@ -18,6 +19,7 @@ export function DateLineChart({ chartProps, Title, style }: Props) {
     label: orderBy,
   }));
 
+  let dataset: DatasetType;
   if (!!chartProps.dataset && orderBy !== "Dia") {
     const salesPerDate: {
       [date: string]: number;
@@ -33,10 +35,12 @@ export function DateLineChart({ chartProps, Title, style }: Props) {
       } else salesPerDate[date] += data.value;
     }
 
-    chartProps.dataset = Object.entries(salesPerDate).map(([date, value]) => ({
+    dataset = Object.entries(salesPerDate).map(([date, value]) => ({
       date,
       value,
     }));
+  } else {
+    dataset = chartProps.dataset || [];
   }
 
   return (
@@ -77,7 +81,7 @@ export function DateLineChart({ chartProps, Title, style }: Props) {
       </FormControl>
 
       {Title}
-      <LineChart {...chartProps} />
+      <LineChart {...{ ...chartProps, dataset }} />
     </div>
   );
 }

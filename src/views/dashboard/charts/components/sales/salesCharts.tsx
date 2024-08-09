@@ -98,7 +98,6 @@ export function SalesCharts({ globalState }: Props) {
     );
   }, [globalState.collaborators, globalState.sales]);
 
-  console.log(salesPerCollaborator);
   return (
     <div className="sales-charts-container">
       <div className="charts-container">

@@ -25,7 +25,6 @@ export function CustomBarChart({
   Title,
   style,
 }: Props) {
-  console.log(dataset);
   return (
     <div
       style={{
