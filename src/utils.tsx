@@ -90,6 +90,11 @@ export function getTrimmed<T>(obj: T): T {
   return obj;
 }
 
+export function roundNumber(num: number, decimalPlaces = 2): number {
+  const powerOf10 = Number(`1e${decimalPlaces}`);
+  return Math.round((num + Number.EPSILON) * powerOf10) / powerOf10;
+}
+
 export function getSaleValue(products: ProductSales): number;
 export function getSaleValue(
   products: ProductSales,
@@ -124,7 +129,7 @@ export function getClientDebt(
   sales: Sales,
   clientId: string,
   convertToString = false
-): number | string {
+) {
   let total = 0;
   for (const sale of sales) {
     if (sale.client !== clientId) continue;
@@ -134,9 +139,4 @@ export function getClientDebt(
   total = roundNumber(total);
 
   return convertToString ? total.toFixed(2).replace(".", ",") : total;
-}
-
-export function roundNumber(num: number, decimalPlaces: number = 2): number {
-  const powerOf10 = Number(`1e${decimalPlaces}`);
-  return Math.round((num + Number.EPSILON) * powerOf10) / powerOf10;
 }

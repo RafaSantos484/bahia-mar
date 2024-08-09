@@ -1,0 +1,40 @@
+.sales-charts-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  background-color: #eeeeee;
+  border-radius: 10px;
+  position: relative;
+
+  .charts-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    /*.chart-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 80%;
+      align-items: center;
+
+      > span {
+        font-weight: bold;
+      }
+    }*/
+
+    .chart-title {
+      display: flex;
+      align-items: center;
+
+      > span {
+        font-weight: bold;
+        font-size: 1.3rem;
+        margin: 0 2px;
+      }
+    }
+  }
+}

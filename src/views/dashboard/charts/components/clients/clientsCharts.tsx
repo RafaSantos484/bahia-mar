@@ -43,7 +43,7 @@ export function ClientsCharts({ globalState }: Props) {
   const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   return (
-    <div className="collaborators-charts-container">
+    <div className="clients-charts-container">
       {!selectedClient && (
         <>
           <div className="title-container">
@@ -124,7 +124,7 @@ export function ClientsCharts({ globalState }: Props) {
             .map(([date, { total, count }]) => ({ date, total, count }))
             .sort((a, b) => a.date.localeCompare(b.date));
           return (
-            <div className="collaborator-report-container">
+            <div className="client-report-container">
               <Tooltip title="Voltar">
                 <IconButton
                   className="return-btn"

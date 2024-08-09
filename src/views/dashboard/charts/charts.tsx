@@ -5,17 +5,17 @@ import { GlobalState } from "../../../global-state-context";
 import "./charts.scss";
 import { CollaboratorsCharts } from "./components/collaborators/collaboratorsCharts";
 import { ClientsCharts } from "./components/clients/clientsCharts";
+import { SalesCharts } from "./components/sales/salesCharts";
 
-type ReportType = "Funcionários" | "Clientes";
-const ReportTypeArr: ReportType[] = ["Clientes", "Funcionários"];
+type ReportType = "Vendas" | "Clientes" | "Funcionários";
+const ReportTypeArr: ReportType[] = ["Vendas", "Clientes", "Funcionários"];
 
 type Props = {
   globalState: GlobalState;
 };
 
 export function Charts({ globalState }: Props) {
-  const [selectedReport, setSelectedReport] =
-    useState<ReportType>("Clientes");
+  const [selectedReport, setSelectedReport] = useState<ReportType>("Vendas");
 
   return (
     <div className="charts-container">
@@ -37,6 +37,7 @@ export function Charts({ globalState }: Props) {
         </FormControl>
       </div>
 
+      {selectedReport === "Vendas" && <SalesCharts globalState={globalState} />}
       {selectedReport === "Clientes" && (
         <ClientsCharts globalState={globalState} />
       )}
