@@ -164,43 +164,48 @@ export function ClientsCharts({ globalState }: Props) {
 
               <div className="charts-container">
                 <DateLineChart
-                  dataset={salesPerDayDataset.map((sale) => ({
-                    date: sale.date,
-                    value: sale.total,
-                  }))}
-                  xAxis={[
-                    {
-                      scaleType: "band",
-                      dataKey: "date",
-                      valueFormatter: (value: string) =>
-                        value.split("-").reverse().join("/"),
-                    },
-                  ]}
-                  series={[
-                    {
-                      dataKey: "value",
-                    },
-                  ]}
+                  chartProps={{
+                    dataset: salesPerDayDataset.map((sale) => ({
+                      date: sale.date,
+                      value: sale.total,
+                    })),
+                    xAxis: [
+                      {
+                        scaleType: "band",
+                        dataKey: "date",
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
+                      },
+                    ],
+                    series: [
+                      {
+                        dataKey: "value",
+                      },
+                    ],
+                  }}
                   Title={<span>Faturamento</span>}
                 />
                 <DateLineChart
-                  dataset={salesPerDayDataset.map((sale) => ({
-                    date: sale.date,
-                    value: sale.count,
-                  }))}
-                  xAxis={[
-                    {
-                      scaleType: "band",
-                      dataKey: "date",
-                      valueFormatter: (value: string) =>
-                        value.split("-").reverse().join("/"),
-                    },
-                  ]}
-                  series={[
-                    {
-                      dataKey: "value",
-                    },
-                  ]}
+                  chartProps={{
+                    dataset: salesPerDayDataset.map((sale) => ({
+                      date: sale.date,
+                      value: sale.count,
+                    })),
+                    xAxis: [
+                      {
+                        scaleType: "band",
+                        dataKey: "date",
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
+                      },
+                    ],
+                    series: [
+                      {
+                        dataKey: "value",
+                      },
+                    ],
+                    yAxis: [{ tickMinStep: 1, min: 0 }],
+                  }}
                   Title={<span>Pedidos</span>}
                 />
               </div>

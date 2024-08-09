@@ -1,10 +1,6 @@
 import {
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   styled,
   Table,
   TableBody,
@@ -41,7 +37,6 @@ export function CollaboratorsCharts({ globalState }: Props) {
   const [selectedCollaborator, setSelectedCollaborator] = useState<
     Collaborator | undefined
   >(undefined);
-  const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   return (
     <div className="collaborators-charts-container">
@@ -144,20 +139,6 @@ export function CollaboratorsCharts({ globalState }: Props) {
                 </IconButton>
               </Tooltip>
 
-              <FormControl className="select-order-by-container">
-                <InputLabel id="order-by-select-label">Ordenar por</InputLabel>
-                <Select
-                  labelId="order-by-select-label"
-                  label="Ordenar por"
-                  value={orderBy}
-                  onChange={(e) => setOrderBy(e.target.value as any)}
-                >
-                  <MenuItem value={"Dia"}>Dia</MenuItem>
-                  <MenuItem value={"Mês"}>Mês</MenuItem>
-                  <MenuItem value={"Ano"}>Ano</MenuItem>
-                </Select>
-              </FormControl>
-
               <h1>{selectedCollaborator.name}</h1>
 
               <div className="info-container">
@@ -175,43 +156,48 @@ export function CollaboratorsCharts({ globalState }: Props) {
 
               <div className="charts-container">
                 <DateLineChart
-                  dataset={salesPerDayDataset.map((sale) => ({
-                    date: sale.date,
-                    value: sale.total,
-                  }))}
-                  xAxis={[
-                    {
-                      scaleType: "band",
-                      dataKey: "date",
-                      valueFormatter: (value: string) =>
-                        value.split("-").reverse().join("/"),
-                    },
-                  ]}
-                  series={[
-                    {
-                      dataKey: "value",
-                    },
-                  ]}
+                  chartProps={{
+                    dataset: salesPerDayDataset.map((sale) => ({
+                      date: sale.date,
+                      value: sale.total,
+                    })),
+                    xAxis: [
+                      {
+                        scaleType: "band",
+                        dataKey: "date",
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
+                      },
+                    ],
+                    series: [
+                      {
+                        dataKey: "value",
+                      },
+                    ],
+                  }}
                   Title={<span>Faturamento</span>}
                 />
                 <DateLineChart
-                  dataset={salesPerDayDataset.map((sale) => ({
-                    date: sale.date,
-                    value: sale.count,
-                  }))}
-                  xAxis={[
-                    {
-                      scaleType: "band",
-                      dataKey: "date",
-                      valueFormatter: (value: string) =>
-                        value.split("-").reverse().join("/"),
-                    },
-                  ]}
-                  series={[
-                    {
-                      dataKey: "value",
-                    },
-                  ]}
+                  chartProps={{
+                    dataset: salesPerDayDataset.map((sale) => ({
+                      date: sale.date,
+                      value: sale.count,
+                    })),
+                    xAxis: [
+                      {
+                        scaleType: "band",
+                        dataKey: "date",
+                        valueFormatter: (value: string) =>
+                          value.split("-").reverse().join("/"),
+                      },
+                    ],
+                    series: [
+                      {
+                        dataKey: "value",
+                      },
+                    ],
+                    yAxis: [{ tickMinStep: 1, min: 0 }],
+                  }}
                   Title={<span>Pedidos</span>}
                 />
               </div>

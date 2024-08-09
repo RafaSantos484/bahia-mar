@@ -103,20 +103,22 @@ export function SalesCharts({ globalState }: Props) {
     <div className="sales-charts-container">
       <div className="charts-container">
         <DateLineChart
-          dataset={salesPerDateDayset}
-          xAxis={[
-            {
-              scaleType: "band",
-              dataKey: "date",
-              valueFormatter: (value: string) =>
-                value.split("-").reverse().join("/"),
-            },
-          ]}
-          series={[
-            {
-              dataKey: "value",
-            },
-          ]}
+          chartProps={{
+            dataset: salesPerDateDayset,
+            xAxis: [
+              {
+                scaleType: "band",
+                dataKey: "date",
+                valueFormatter: (value: string) =>
+                  value.split("-").reverse().join("/"),
+              },
+            ],
+            series: [
+              {
+                dataKey: "value",
+              },
+            ],
+          }}
           Title={
             <div className="chart-title">
               <PaidIcon />

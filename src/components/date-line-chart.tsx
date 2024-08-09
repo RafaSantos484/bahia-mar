@@ -1,44 +1,39 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { LineChart, LineSeriesType } from "@mui/x-charts";
-import {
-  AxisConfig,
-  AxisScaleConfig,
-  ChartsXAxisProps,
-  MakeOptional,
-} from "@mui/x-charts/internals";
+import { LineChart, LineChartProps } from "@mui/x-charts";
 import { CSSProperties, useState } from "react";
 
 type Props = {
-  dataset: { date: string; value: number }[];
-  xAxis: MakeOptional<
-    AxisConfig<keyof AxisScaleConfig, any, ChartsXAxisProps>,
-    "id"
-  >[];
-  series: MakeOptional<LineSeriesType, "type">[];
+  chartProps: LineChartProps;
   Title?: JSX.Element;
   style?: CSSProperties;
 };
 
-export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
+export function DateLineChart({ chartProps, Title, style }: Props) {
   const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   style = style || {};
 
-  xAxis = xAxis.map((axis) => ({ ...axis, label: orderBy }));
+  chartProps.xAxis = chartProps.xAxis?.map((axis) => ({
+    ...axis,
+    label: orderBy,
+  }));
 
-  if (orderBy !== "Dia") {
+  if (!!chartProps.dataset && orderBy !== "Dia") {
     const salesPerDate: {
       [date: string]: number;
     } = {};
     const sliceEnd = orderBy === "Ano" ? 4 : 7;
-    for (const data of dataset) {
+    for (const data of chartProps.dataset as {
+      date: string;
+      value: number;
+    }[]) {
       const date = data.date.slice(0, sliceEnd);
       if (!(date in salesPerDate)) {
         salesPerDate[date] = data.value;
       } else salesPerDate[date] += data.value;
     }
 
-    dataset = Object.entries(salesPerDate).map(([date, value]) => ({
+    chartProps.dataset = Object.entries(salesPerDate).map(([date, value]) => ({
       date,
       value,
     }));
@@ -82,7 +77,7 @@ export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
       </FormControl>
 
       {Title}
-      <LineChart dataset={dataset} xAxis={xAxis} series={series} />
+      <LineChart {...chartProps} />
     </div>
   );
 }
