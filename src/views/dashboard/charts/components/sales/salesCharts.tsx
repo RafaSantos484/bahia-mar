@@ -10,7 +10,7 @@ type Props = {
   globalState: GlobalState;
 };
 
-type DateSale = { date: string; total: number };
+type DateSale = { date: string; value: number };
 
 export function SalesCharts({ globalState }: Props) {
   const [salesPerDateDayset, setSalesPerDayDataset] = useState<DateSale[]>([]);
@@ -28,7 +28,7 @@ export function SalesCharts({ globalState }: Props) {
 
     setSalesPerDayDataset(
       Object.entries(salesPerDay)
-        .map(([date, total]) => ({ date, total }))
+        .map(([date, value]) => ({ date, value }))
         .sort((a, b) => a.date.localeCompare(b.date))
     );
   }, [globalState.sales]);
@@ -48,7 +48,7 @@ export function SalesCharts({ globalState }: Props) {
           ]}
           series={[
             {
-              dataKey: "total",
+              dataKey: "value",
             },
           ]}
           Title={

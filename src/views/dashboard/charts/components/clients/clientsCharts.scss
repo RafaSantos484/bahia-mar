@@ -50,12 +50,6 @@
         font-size: 2.5vw;
       }
     }
-    .select-order-by-container {
-      position: absolute;
-      right: 1vw;
-      top: 1vh;
-      width: 10%;
-    }
 
     .info-container {
       width: 100%;
@@ -92,16 +86,8 @@
       align-items: center;
       justify-content: center;
 
-      .chart-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        height: 80%;
-        align-items: center;
-
-        > span {
-          font-weight: bold;
-        }
+      span {
+        font-weight: bold;
       }
     }
   }

@@ -92,16 +92,8 @@
       align-items: center;
       justify-content: center;
 
-      .chart-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        height: 80%;
-        align-items: center;
-
-        > span {
-          font-weight: bold;
-        }
+      span {
+        font-weight: bold;
       }
     }
   }

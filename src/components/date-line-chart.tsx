@@ -7,10 +7,9 @@ import {
   MakeOptional,
 } from "@mui/x-charts/internals";
 import { CSSProperties, useState } from "react";
-import { formatIsoDate } from "../utils";
 
 type Props = {
-  dataset: any[];
+  dataset: { date: string; value: number }[];
   xAxis: MakeOptional<
     AxisConfig<keyof AxisScaleConfig, any, ChartsXAxisProps>,
     "id"
@@ -32,7 +31,6 @@ export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
       date: value.date.slice(0, 7),
     }));
   }
-  console.log(dataset);
 
   if (orderBy !== "Dia") {
     const salesPerDate: {
@@ -42,17 +40,16 @@ export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
     for (const data of dataset) {
       const date = data.date.slice(0, sliceEnd);
       if (!(date in salesPerDate)) {
-        salesPerDate[date] = data.total;
-      } else salesPerDate[date] += data.total;
+        salesPerDate[date] = data.value;
+      } else salesPerDate[date] += data.value;
     }
 
-    dataset = Object.entries(salesPerDate).map(([date, total]) => ({
+    dataset = Object.entries(salesPerDate).map(([date, value]) => ({
       date,
-      total,
+      value,
     }));
   }
 
-  console.log(dataset);
   return (
     <div
       style={{

@@ -1,10 +1,6 @@
 import {
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   styled,
   Table,
   TableBody,
@@ -20,8 +16,8 @@ import ArrowCircleLeftIcon from "@mui/icons-material/ArrowCircleLeft";
 import { GlobalState } from "../../../../../global-state-context";
 import "./clientsCharts.scss";
 import { Client, clientTypeLabels } from "../../../../../types";
-import { LineChart } from "@mui/x-charts";
 import { formatIsoDate, getClientDebt } from "../../../../../utils";
+import { DateLineChart } from "../../../../../components/date-line-chart";
 
 type Props = {
   globalState: GlobalState;
@@ -40,7 +36,6 @@ export function ClientsCharts({ globalState }: Props) {
   const [selectedClient, setSelectedClient] = useState<Client | undefined>(
     undefined
   );
-  const [orderBy, setOrderBy] = useState<"Dia" | "Mês" | "Ano">("Dia");
 
   return (
     <div className="clients-charts-container">
@@ -101,26 +96,21 @@ export function ClientsCharts({ globalState }: Props) {
           );
 
           let totalEarning = 0;
-          const salesPerDate: {
-            [date: string]: { total: number; count: number };
+          const salesPerDay: {
+            [day: string]: { total: number; count: number };
           } = {};
           for (const sale of clientSales) {
-            const dateFormats = {
-              Dia: "YYYY-MM-DD",
-              Mês: "YYYY-MM",
-              Ano: "YYYY",
-            };
-            const date = formatIsoDate(sale.createdAt, dateFormats[orderBy]);
-            if (!(date in salesPerDate)) {
-              salesPerDate[date] = { total: 0, count: 0 };
+            const day = formatIsoDate(sale.createdAt);
+            if (!(day in salesPerDay)) {
+              salesPerDay[day] = { total: 0, count: 0 };
             }
 
             totalEarning += sale.paidValue;
-            salesPerDate[date].total += sale.paidValue;
-            salesPerDate[date].count++;
+            salesPerDay[day].total += sale.paidValue;
+            salesPerDay[day].count++;
           }
 
-          const salesPerDateDataset = Object.entries(salesPerDate)
+          const salesPerDayDataset = Object.entries(salesPerDay)
             .map(([date, { total, count }]) => ({ date, total, count }))
             .sort((a, b) => a.date.localeCompare(b.date));
           return (
@@ -134,20 +124,6 @@ export function ClientsCharts({ globalState }: Props) {
                   <ArrowCircleLeftIcon />
                 </IconButton>
               </Tooltip>
-
-              <FormControl className="select-order-by-container">
-                <InputLabel id="order-by-select-label">Ordenar por</InputLabel>
-                <Select
-                  labelId="order-by-select-label"
-                  label="Ordenar por"
-                  value={orderBy}
-                  onChange={(e) => setOrderBy(e.target.value as any)}
-                >
-                  <MenuItem value={"Dia"}>Dia</MenuItem>
-                  <MenuItem value={"Mês"}>Mês</MenuItem>
-                  <MenuItem value={"Ano"}>Ano</MenuItem>
-                </Select>
-              </FormControl>
 
               <h1>{selectedClient.name}</h1>
 
@@ -165,57 +141,46 @@ export function ClientsCharts({ globalState }: Props) {
               </div>
 
               <div className="charts-container">
-                <div className="chart-container">
-                  <span>Faturamento</span>
-                  <LineChart
-                    dataset={salesPerDateDataset}
-                    title="Faturamento"
-                    xAxis={[
-                      {
-                        scaleType: "band",
-                        dataKey: "date",
-                        label: orderBy,
-                        valueFormatter: (value: string) =>
-                          value.split("-").reverse().join("/"),
-                      },
-                    ]}
-                    series={[
-                      {
-                        dataKey: "total",
-                      },
-                    ]}
-                  />
-                </div>
-                <div className="chart-container">
-                  <span>Vendas</span>
-                  <LineChart
-                    dataset={salesPerDateDataset}
-                    title="Faturamento"
-                    xAxis={[
-                      {
-                        scaleType: "band",
-                        dataKey: "date",
-                        label: orderBy,
-                        valueFormatter: (value: string) =>
-                          value.split("-").reverse().join("/"),
-                      },
-                    ]}
-                    yAxis={[
-                      {
-                        id: "count",
-                        dataKey: "count",
-                        tickMinStep: 1,
-                        min: 0,
-                      },
-                    ]}
-                    series={[
-                      {
-                        yAxisId: "count",
-                        dataKey: "count",
-                      },
-                    ]}
-                  />
-                </div>
+                <DateLineChart
+                  dataset={salesPerDayDataset.map((sale) => ({
+                    date: sale.date,
+                    value: sale.total,
+                  }))}
+                  xAxis={[
+                    {
+                      scaleType: "band",
+                      dataKey: "date",
+                      valueFormatter: (value: string) =>
+                        value.split("-").reverse().join("/"),
+                    },
+                  ]}
+                  series={[
+                    {
+                      dataKey: "value",
+                    },
+                  ]}
+                  Title={<span>Faturamento</span>}
+                />
+                <DateLineChart
+                  dataset={salesPerDayDataset.map((sale) => ({
+                    date: sale.date,
+                    value: sale.count,
+                  }))}
+                  xAxis={[
+                    {
+                      scaleType: "band",
+                      dataKey: "date",
+                      valueFormatter: (value: string) =>
+                        value.split("-").reverse().join("/"),
+                    },
+                  ]}
+                  series={[
+                    {
+                      dataKey: "value",
+                    },
+                  ]}
+                  Title={<span>Pedidos</span>}
+                />
               </div>
             </div>
           );
