@@ -13,6 +13,9 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    // min-width: 900px;
+    flex-wrap: wrap;
+    overflow: auto;
 
     /*.chart-container {
       display: flex;

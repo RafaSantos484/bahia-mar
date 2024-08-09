@@ -57,8 +57,11 @@ export function DateLineChart({ dataset, xAxis, series, Title, style }: Props) {
         display: "flex",
         flexDirection: "column",
         flex: 1,
-        height: "80%",
+        // height: "80%",
         alignItems: "center",
+        width: "49%",
+        minWidth: "500px",
+        height: "50vh",
         ...style,
       }}
     >
