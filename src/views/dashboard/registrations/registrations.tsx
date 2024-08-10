@@ -292,13 +292,13 @@ export function Registrations({ globalState }: Props) {
 
                       const sale = el as Sale;
                       if (attr === "collaborator") {
-                        const collaboratorId = sale.collaborator;
+                        const collaboratorId = sale.collaboratorId;
                         const collaborator = globalState.collaborators.find(
                           (c) => c.id === collaboratorId
                         );
                         value = collaborator?.name || "Não encontrado";
                       } else if (attr === "vehicle") {
-                        const vehicleId = sale.vehicle;
+                        const vehicleId = sale.vehicleId;
                         const vehicle = globalState.vehicles.find(
                           (v) => v.id === vehicleId
                         );
@@ -357,11 +357,22 @@ export function Registrations({ globalState }: Props) {
                           </Button>
                         </TableCell>
                       </Tooltip>
-                      <Tooltip title="Deletar">
+                      <Tooltip
+                        title={
+                          dataType === "collaborators" &&
+                          el.id === globalState.loggedUser.id
+                            ? ""
+                            : "Deletar"
+                        }
+                      >
                         <TableCell>
                           <Button
                             color="error"
-                            disabled={isWaitingAsync}
+                            disabled={
+                              isWaitingAsync ||
+                              (dataType === "collaborators" &&
+                                el.id === globalState.loggedUser.id)
+                            }
                             onClick={async () => {
                               if (
                                 window.confirm(
@@ -370,10 +381,6 @@ export function Registrations({ globalState }: Props) {
                               ) {
                                 setIsWaitingAsync(true);
                                 try {
-                                  /* if ("photoSrc" in el && !!el.photoSrc) {
-                            await deleteFile(el.id, "photo.png");
-                          }
-                          await deleteDocument(dataType, el.id); */
                                   const err = await deleteData(dataType, el.id);
                                   if (!err) {
                                     setAlertInfo({

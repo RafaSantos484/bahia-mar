@@ -71,24 +71,24 @@ export function SalesCharts({ globalState }: Props) {
     } = {};
     const collaborators: { [id: string]: Collaborator | null } = {};
     for (const sale of globalState.sales) {
-      if (!(sale.collaborator in _salesPerCollaborator)) {
+      if (!(sale.collaboratorId in _salesPerCollaborator)) {
         let collaborator: Collaborator | null = null;
-        if (sale.collaborator in collaborators) {
-          collaborator = collaborators[sale.collaborator];
+        if (sale.collaboratorId in collaborators) {
+          collaborator = collaborators[sale.collaboratorId];
         } else {
           collaborator =
-            globalState.collaborators.find((c) => c.id === sale.collaborator) ||
+            globalState.collaborators.find((c) => c.id === sale.collaboratorId) ||
             null;
-          collaborators[sale.collaborator] = collaborator;
+          collaborators[sale.collaboratorId] = collaborator;
         }
 
         if (!!collaborator) {
-          _salesPerCollaborator[sale.collaborator] = {
+          _salesPerCollaborator[sale.collaboratorId] = {
             name: collaborator.name,
             value: sale.paidValue,
           };
         }
-      } else _salesPerCollaborator[sale.collaborator].value += sale.paidValue;
+      } else _salesPerCollaborator[sale.collaboratorId].value += sale.paidValue;
     }
 
     setSalesPerCollaborator(

@@ -125,8 +125,8 @@ export type ProductSale = { price: number; quantity: number };
 export type ProductSales = { [productId: string]: ProductSale };
 export type Sale = {
   id: string;
-  collaborator: string;
-  vehicle: string;
+  collaboratorId: string;
+  vehicleId: string;
   paymentMethod: PaymentMethod;
   client: string | TempClient;
   products: ProductSales;

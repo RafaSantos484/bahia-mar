@@ -84,7 +84,7 @@ export function CollaboratorsCharts({ globalState }: Props) {
       {selectedCollaborator &&
         (() => {
           const collaboratorSales = globalState.sales.filter(
-            (sale) => sale.collaborator === selectedCollaborator.id
+            (sale) => sale.collaboratorId === selectedCollaborator.id
           );
 
           let totalEarning = 0;

@@ -349,8 +349,8 @@ export default function RegisterPopUp({
     } else if (dataType === "sales") {
       const _editingData = editingData as Sale | undefined;
       setData({
-        collaborator: isAdmin ? "" : globalState.loggedUser.id,
-        vehicle: "",
+        collaboratorId: isAdmin ? "" : globalState.loggedUser.id,
+        vehicleId: "",
         paymentMethod: "",
         client: "",
         products: _editingData?.products || {},
@@ -788,7 +788,7 @@ export default function RegisterPopUp({
                         label="Funcionário"
                         value={data.collaborator}
                         onChange={(e) =>
-                          setData({ ...data, collaborator: e.target.value })
+                          setData({ ...data, collaboratorId: e.target.value })
                         }
                       >
                         {globalState.collaborators.map((c) => (
@@ -807,7 +807,7 @@ export default function RegisterPopUp({
                       label="Veículo"
                       value={data.vehicle}
                       onChange={(e) =>
-                        setData({ ...data, vehicle: e.target.value })
+                        setData({ ...data, vehicleId: e.target.value })
                       }
                     >
                       {globalState.vehicles.map((v) => (
