@@ -49,7 +49,7 @@ export function DateLineChart({ chartProps, Title, style }: Props) {
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        flex: 1,
+        // flex: 1,
         // height: "80%",
         alignItems: "center",
         width: "49%",

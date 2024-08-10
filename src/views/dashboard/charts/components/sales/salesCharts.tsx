@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import PaidIcon from "@mui/icons-material/Paid";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
 import { GlobalState } from "../../../../../global-state-context";
 import { formatIsoDate } from "../../../../../utils";
 import "./salesCharts.scss";
 import { DateLineChart } from "../../../../../components/date-line-chart";
-import { Collaborator } from "../../../../../types";
+import { Collaborator, Product } from "../../../../../types";
 import { CustomBarChart } from "../../../../../components/custom-bar-chart";
 import dayjs from "dayjs";
 
@@ -17,14 +19,43 @@ type Props = {
 type DateSale = { date: string; value: number };
 type LabelSale = {
   label: { value: string };
-  value: number;
+  value: any;
+};
+
+type TypeDict<T> = {
+  [id: string]: T;
 };
 
 export function SalesCharts({ globalState }: Props) {
+  const [collaboratorsDict, setCollaboratorsDict] = useState<
+    TypeDict<Collaborator>
+  >({});
+  const [productsDict, setProductsDict] = useState<TypeDict<Product>>({});
+
   const [salesPerDateDayset, setSalesPerDayDataset] = useState<DateSale[]>([]);
-  const [salesPerCollaborator, setSalesPerCollaborator] = useState<LabelSale[]>(
-    []
-  );
+  const [salesPerCollaborator, setSalesPerCollaborator] = useState<{
+    earning: LabelSale[];
+    count: LabelSale[];
+  }>({ earning: [], count: [] });
+  const [salesPerProduct, setSalesPerProduct] = useState<{
+    earning: LabelSale[];
+    count: LabelSale[];
+  }>({ earning: [], count: [] });
+
+  useEffect(() => {
+    const _collaboratorsDict: TypeDict<Collaborator> = {};
+    for (const collaborator of globalState.collaborators) {
+      _collaboratorsDict[collaborator.id] = collaborator;
+    }
+    setCollaboratorsDict(_collaboratorsDict);
+  }, [globalState.collaborators]);
+  useEffect(() => {
+    const _productsDict: TypeDict<Product> = {};
+    for (const product of globalState.products) {
+      _productsDict[product.id] = product;
+    }
+    setProductsDict(_productsDict);
+  }, [globalState.products]);
 
   useEffect(() => {
     const salesPerDay: {
@@ -67,36 +98,74 @@ export function SalesCharts({ globalState }: Props) {
 
   useEffect(() => {
     const _salesPerCollaborator: {
-      [id: string]: { name: string; value: number };
+      [id: string]: { name: string; value: { earning: number; count: number } };
     } = {};
-    const collaborators: { [id: string]: Collaborator | null } = {};
     for (const sale of globalState.sales) {
       if (!(sale.collaboratorId in _salesPerCollaborator)) {
-        let collaborator: Collaborator | null = null;
-        if (sale.collaboratorId in collaborators) {
-          collaborator = collaborators[sale.collaboratorId];
-        } else {
-          collaborator =
-            globalState.collaborators.find((c) => c.id === sale.collaboratorId) ||
-            null;
-          collaborators[sale.collaboratorId] = collaborator;
-        }
-
+        const collaborator = collaboratorsDict[sale.collaboratorId];
         if (!!collaborator) {
           _salesPerCollaborator[sale.collaboratorId] = {
             name: collaborator.name,
-            value: sale.paidValue,
+            value: { earning: sale.paidValue, count: 1 },
           };
         }
-      } else _salesPerCollaborator[sale.collaboratorId].value += sale.paidValue;
+      } else {
+        _salesPerCollaborator[sale.collaboratorId].value.earning +=
+          sale.paidValue;
+        _salesPerCollaborator[sale.collaboratorId].value.count++;
+      }
     }
 
-    setSalesPerCollaborator(
-      Object.values(_salesPerCollaborator)
-        .map(({ name, value }) => ({ label: { value: name }, value }))
-        .sort((a, b) => b.value - a.value)
-    );
-  }, [globalState.collaborators, globalState.sales]);
+    const earning = Object.values(_salesPerCollaborator)
+      .map(({ name, value }) => ({
+        label: { value: name },
+        value: value.earning,
+      }))
+      .sort((a, b) => b.value - a.value);
+    const count = Object.values(_salesPerCollaborator)
+      .map(({ name, value }) => ({
+        label: { value: name },
+        value: value.count,
+      }))
+      .sort((a, b) => b.value - a.value);
+    setSalesPerCollaborator({ earning, count });
+  }, [collaboratorsDict, globalState.sales]);
+
+  useEffect(() => {
+    const _salesPerProduct: {
+      [id: string]: { name: string; value: { earning: number; count: number } };
+    } = {};
+    for (const sale of globalState.sales) {
+      for (const [id, info] of Object.entries(sale.products)) {
+        if (!(id in _salesPerProduct)) {
+          const product = productsDict[id];
+          if (!!product) {
+            _salesPerProduct[id] = {
+              name: product.name,
+              value: { earning: info.price * info.quantity, count: 1 },
+            };
+          }
+        } else {
+          _salesPerProduct[id].value.earning += info.price * info.quantity;
+          _salesPerProduct[id].value.count++;
+        }
+      }
+    }
+
+    const earning = Object.values(_salesPerProduct)
+      .map(({ name, value }) => ({
+        label: { value: name },
+        value: value.earning,
+      }))
+      .sort((a, b) => b.value - a.value);
+    const count = Object.values(_salesPerProduct)
+      .map(({ name, value }) => ({
+        label: { value: name },
+        value: value.count,
+      }))
+      .sort((a, b) => b.value - a.value);
+    setSalesPerProduct({ earning, count });
+  }, [productsDict, globalState.sales]);
 
   return (
     <div className="sales-charts-container">
@@ -124,9 +193,11 @@ export function SalesCharts({ globalState }: Props) {
               <span>Faturamento</span>
             </div>
           }
+          style={{ width: "98%" }}
         />
+
         <CustomBarChart
-          dataset={salesPerCollaborator as any}
+          dataset={salesPerCollaborator.earning as any}
           xAxis={[
             {
               scaleType: "band",
@@ -143,6 +214,70 @@ export function SalesCharts({ globalState }: Props) {
             <div className="chart-title">
               <AccountCircleIcon />
               <span>Faturamento por Funcionário</span>
+            </div>
+          }
+        />
+        <CustomBarChart
+          dataset={salesPerCollaborator.count as any}
+          xAxis={[
+            {
+              scaleType: "band",
+              dataKey: "label",
+              valueFormatter: (obj: any) => obj.value,
+            },
+          ]}
+          series={[
+            {
+              dataKey: "value",
+            },
+          ]}
+          Title={
+            <div className="chart-title">
+              <LocalOfferIcon />
+              <span>Vendas por Funcionário</span>
+            </div>
+          }
+        />
+
+        <CustomBarChart
+          dataset={salesPerProduct.earning as any}
+          xAxis={[
+            {
+              scaleType: "band",
+              dataKey: "label",
+              valueFormatter: (obj: any) => obj.value,
+            },
+          ]}
+          series={[
+            {
+              dataKey: "value",
+            },
+          ]}
+          Title={
+            <div className="chart-title">
+              <LocalDrinkIcon />
+              <span>Faturamento por Produto</span>
+            </div>
+          }
+        />
+        <CustomBarChart
+          dataset={salesPerProduct.count as any}
+          xAxis={[
+            {
+              scaleType: "band",
+              dataKey: "label",
+              valueFormatter: (obj: any) => obj.value,
+            },
+          ]}
+          series={[
+            {
+              dataKey: "value",
+            },
+          ]}
+          Title={
+            <div className="chart-title">
+              <LocalOfferIcon />
+              <span>Vendas por Produto</span>
             </div>
           }
         />

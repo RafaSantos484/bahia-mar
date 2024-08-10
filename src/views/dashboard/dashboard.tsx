@@ -55,7 +55,6 @@ export default function Dashboard() {
     );
   }
 
-  console.log(globalState);
   const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
 
   return (
