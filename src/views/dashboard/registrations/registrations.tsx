@@ -50,6 +50,7 @@ import {
 } from "../../../utils";
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../../components/custom-alert";
+import LogoHeader from "../../../components/logo-header";
 
 export type DataType =
   | "vehicles"
@@ -102,9 +103,9 @@ export function Registrations({ globalState }: Props) {
   const [dataType, setDataType] = useState<DataType>("sales");
   const [creatingDataType, setCreatingDataType] = useState<
     | {
-        dataType: DataType;
-        editingData?: Vehicle | Client | Product | Collaborator | Sale;
-      }
+      dataType: DataType;
+      editingData?: Vehicle | Client | Product | Collaborator | Sale;
+    }
     | undefined
   >(undefined);
   const [seePhotoAnchorRef, setSeePhotoAnchorRef] =
@@ -112,6 +113,7 @@ export function Registrations({ globalState }: Props) {
 
   return (
     <div className="global-table-container table-container">
+      <LogoHeader />
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
       {!!creatingDataType && (
@@ -184,10 +186,10 @@ export function Registrations({ globalState }: Props) {
         >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
       </div>
 
-      <TableContainer component={Paper}>
-        <Table stickyHeader sx={{ borderColor: "secondary" }}>
+      <TableContainer component={Paper} >
+        <Table stickyHeader sx={{ borderColor: "secondary" }} >
           <TableHead>
-            <TableRow>
+            <TableRow >
               {tableCols[dataType].map((attr) => {
                 if (
                   dataType === "sales" &&
@@ -228,7 +230,7 @@ export function Registrations({ globalState }: Props) {
             </TableRow>
           </TableHead>
 
-          <TableBody>
+          <TableBody >
             {globalState[dataType].map((el) => {
               return (
                 <TableRow key={el.id}>
@@ -246,13 +248,13 @@ export function Registrations({ globalState }: Props) {
                       if (attr === "type")
                         value =
                           collaboratorTypeLabels[
-                            (el as Collaborator).type as CollaboratorType
+                          (el as Collaborator).type as CollaboratorType
                           ];
                     } else if (dataType === "vehicles") {
                       if (attr === "type")
                         value =
                           vehicleTypeLabels[
-                            (el as Vehicle).type as VehicleType
+                          (el as Vehicle).type as VehicleType
                           ];
                     } else if (dataType === "products") {
                       const product = el as Product;
@@ -360,7 +362,7 @@ export function Registrations({ globalState }: Props) {
                       <Tooltip
                         title={
                           dataType === "collaborators" &&
-                          el.id === globalState.loggedUser.id
+                            el.id === globalState.loggedUser.id
                             ? ""
                             : "Deletar"
                         }
