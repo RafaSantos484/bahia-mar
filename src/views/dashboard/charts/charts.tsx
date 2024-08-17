@@ -7,6 +7,8 @@ import { CollaboratorsCharts } from "./components/collaborators/collaboratorsCha
 import { ClientsCharts } from "./components/clients/clientsCharts";
 import { SalesCharts } from "./components/sales/salesCharts";
 
+import LogoHeader from "../../../components/logo-header";
+
 type ReportType = "Vendas" | "Clientes" | "Funcionários";
 const ReportTypeArr: ReportType[] = ["Vendas", "Clientes", "Funcionários"];
 
@@ -19,6 +21,7 @@ export function Charts({ globalState }: Props) {
 
   return (
     <div className="charts-container">
+      <LogoHeader />
       <div className="upper-menu-container">
         <FormControl className="report-type-select-container">
           <InputLabel id="report-type-select-label">Relatório</InputLabel>

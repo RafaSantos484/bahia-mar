@@ -1,6 +1,8 @@
 .table-container {
   flex: 1;
   margin: 0 1vw;
+  overflow: auto;
+
 
   .upper-table-menu-container {
     display: flex;

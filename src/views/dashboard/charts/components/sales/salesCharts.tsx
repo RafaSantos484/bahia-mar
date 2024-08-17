@@ -193,7 +193,7 @@ export function SalesCharts({ globalState }: Props) {
               <span>Faturamento</span>
             </div>
           }
-          style={{ width: "98%" }}
+          style={{ width: "98%", paddingBottom: '8vh' }}
         />
 
         <CustomBarChart
@@ -216,6 +216,7 @@ export function SalesCharts({ globalState }: Props) {
               <span>Faturamento por Funcionário</span>
             </div>
           }
+          style={{ paddingBottom: '8vh' }}
         />
         <CustomBarChart
           dataset={salesPerCollaborator.count as any}
@@ -237,6 +238,7 @@ export function SalesCharts({ globalState }: Props) {
               <span>Vendas por Funcionário</span>
             </div>
           }
+          style={{ paddingBottom: '8vh' }}
         />
 
         <CustomBarChart
@@ -259,6 +261,7 @@ export function SalesCharts({ globalState }: Props) {
               <span>Faturamento por Produto</span>
             </div>
           }
+          style={{ paddingBottom: '8vh' }}
         />
         <CustomBarChart
           dataset={salesPerProduct.count as any}
@@ -280,6 +283,7 @@ export function SalesCharts({ globalState }: Props) {
               <span>Vendas por Produto</span>
             </div>
           }
+          style={{ paddingBottom: '8vh' }}
         />
       </div>
     </div>

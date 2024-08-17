@@ -22,6 +22,9 @@ import { Registrations } from "./registrations/registrations";
 import { Charts } from "./charts/charts";
 import { CollaboratorType } from "../../types";
 
+
+
+
 const themes = createTheme({
   palette: {
     primary: {
@@ -59,13 +62,17 @@ export default function Dashboard() {
 
   return (
     <div className="global-fullscreen-container dashboard-container">
+
       <ThemeProvider theme={themes}>
         <div className="content-container">
+          
           <div
             className="left-bar-container"
             style={{ width: isLeftBarOpen ? "15vw" : "5vw" }}
           >
+
             <div className="buttons-container">
+
               <IconButton
                 style={{ alignSelf: "center" }}
                 onClick={() => setIsLeftBarOpen(!isLeftBarOpen)}
