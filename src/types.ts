@@ -99,6 +99,12 @@ export const productAttrsTranslator = {
   price: "Preço",
 };
 
+export type PaymentMethod = { id: string; name: string; createdAt: Timestamp };
+export type PaymentMethods = PaymentMethod[];
+export const PaymentMethodAttrsTranslator = {
+  name: "Nome",
+};
+
 export type TempClient = {
   name: string;
   phone: string;
@@ -109,25 +115,13 @@ export type TempClient = {
   number: string;
   complement: string;
 };
-export enum PaymentMethod {
-  Money = "0",
-  Pix = "1",
-  CreditCard = "2",
-  DebitCard = "3",
-}
-export const paymentMethodLabels = {
-  "0": "Dinheiro",
-  "1": "Pix",
-  "2": "Cartão de crédito",
-  "3": "Cartão de débito",
-};
 export type ProductSale = { price: number; quantity: number };
 export type ProductSales = { [productId: string]: ProductSale };
 export type Sale = {
   id: string;
   collaboratorId: string;
   vehicleId: string;
-  paymentMethod: PaymentMethod;
+  paymentMethodId: string;
   client: string | TempClient;
   products: ProductSales;
   paidValue: number;

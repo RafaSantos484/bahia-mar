@@ -55,7 +55,7 @@ import {
   CollaboratorType,
   ClientType,
   Sale,
-  paymentMethodLabels,
+  PaymentMethod,
 } from "../../../types";
 import { GlobalState } from "../../../global-state-context";
 import Logo from "../../../assets/logo.png";
@@ -77,7 +77,13 @@ type Props = {
   globalState: GlobalState;
   dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?: Vehicle | Client | Product | Collaborator | Sale;
+  editingData?:
+    | Vehicle
+    | Client
+    | Product
+    | Collaborator
+    | PaymentMethod
+    | Sale;
   fadeTime?: number;
 };
 
@@ -346,12 +352,14 @@ export default function RegisterPopUp({
         password: "",
         confirmPassword: "",
       });
+    } else if (dataType === "paymentMethods") {
+      setData({ name: "" });
     } else if (dataType === "sales") {
       const _editingData = editingData as Sale | undefined;
       setData({
         collaboratorId: isAdmin ? "" : globalState.loggedUser.id,
         vehicleId: "",
-        paymentMethod: "",
+        paymentMethodId: "",
         client: "",
         products: _editingData?.products || {},
         paidFullPrice: !isEditing,
@@ -769,6 +777,17 @@ export default function RegisterPopUp({
               </>
             )}
 
+            {dataType === "paymentMethods" && (
+              <TextField
+                label="Nome"
+                variant="outlined"
+                type="text"
+                required
+                value={data.name}
+                onChange={(e) => setData({ ...data, name: e.target.value })}
+              />
+            )}
+
             {dataType === "sales" && !isEditing && (
               <>
                 <Divider text="Informações da venda" />
@@ -786,7 +805,7 @@ export default function RegisterPopUp({
                       <Select
                         labelId="collaborator-select-label"
                         label="Funcionário"
-                        value={data.collaborator}
+                        value={data.collaboratorId}
                         onChange={(e) =>
                           setData({ ...data, collaboratorId: e.target.value })
                         }
@@ -805,7 +824,7 @@ export default function RegisterPopUp({
                     <Select
                       labelId="vehicle-select-label"
                       label="Veículo"
-                      value={data.vehicle}
+                      value={data.vehicleId}
                       onChange={(e) =>
                         setData({ ...data, vehicleId: e.target.value })
                       }
@@ -824,18 +843,16 @@ export default function RegisterPopUp({
                     <Select
                       labelId="payment-method-select-label"
                       label="Mét. de pagamento"
-                      value={data.paymentMethod}
+                      value={data.paymentMethodId}
                       onChange={(e) =>
-                        setData({ ...data, paymentMethod: e.target.value })
+                        setData({ ...data, paymentMethodId: e.target.value })
                       }
                     >
-                      {Object.entries(paymentMethodLabels).map(
-                        ([value, label]) => (
-                          <MenuItem key={value} value={value}>
-                            {label}
-                          </MenuItem>
-                        )
-                      )}
+                      {globalState.paymentMethods.map((p) => (
+                        <MenuItem key={p.id} value={p.id}>
+                          {p.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </div>

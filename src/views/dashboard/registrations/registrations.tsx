@@ -31,7 +31,8 @@ import {
   Collaborator,
   CollaboratorType,
   collaboratorTypeLabels,
-  paymentMethodLabels,
+  PaymentMethod,
+  PaymentMethodAttrsTranslator,
   Product,
   productAttrsTranslator,
   Sale,
@@ -56,6 +57,7 @@ export type DataType =
   | "clients"
   | "products"
   | "collaborators"
+  | "paymentMethods"
   | "sales";
 export const dataTypeTranslator = {
   sales: { plural: "Vendas", singular: "Venda" },
@@ -63,12 +65,17 @@ export const dataTypeTranslator = {
   collaborators: { plural: "Colaboradores", singular: "Colaborador" },
   products: { plural: "Produtos", singular: "Produto" },
   vehicles: { plural: "Veículos", singular: "Veículo" },
+  paymentMethods: {
+    plural: "Mét. de pagamento",
+    singular: "Mét. de pagamento",
+  },
 };
 const attrsTranslator = {
   vehicles: vehicleAttrsTranslator,
   clients: clientAttrsTranslator,
   products: productAttrsTranslator,
   collaborators: appUserAttrsTranslator,
+  paymentMethods: PaymentMethodAttrsTranslator,
   sales: saleAttrsTranslator,
 };
 
@@ -87,6 +94,7 @@ const tableCols = {
   collaborators: ["name", "email", "cpf", "type"],
   products: ["name", "price", "photoSrc"],
   vehicles: ["type", "brand", "model", "plate"],
+  paymentMethods: ["name"],
 };
 
 type Props = {
@@ -103,7 +111,13 @@ export function Registrations({ globalState }: Props) {
   const [creatingDataType, setCreatingDataType] = useState<
     | {
         dataType: DataType;
-        editingData?: Vehicle | Client | Product | Collaborator | Sale;
+        editingData?:
+          | Vehicle
+          | Client
+          | Product
+          | Collaborator
+          | PaymentMethod
+          | Sale;
       }
     | undefined
   >(undefined);
@@ -213,11 +227,13 @@ export function Registrations({ globalState }: Props) {
 
               {isAdmin && (
                 <>
-                  <Tooltip title="Editar">
-                    <TableCell>
-                      <EditOutlinedIcon />
-                    </TableCell>
-                  </Tooltip>
+                  {dataType !== "paymentMethods" && (
+                    <Tooltip title="Editar">
+                      <TableCell>
+                        <EditOutlinedIcon />
+                      </TableCell>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Deletar">
                     <TableCell>
                       <DeleteOutlineOutlinedIcon color="error" />
@@ -316,7 +332,12 @@ export function Registrations({ globalState }: Props) {
                           value = client?.name || "Não encontrado";
                         }
                       } else if (attr === "paymentMethod") {
-                        value = paymentMethodLabels[sale.paymentMethod];
+                        // value = paymentMethodLabels[sale.paymentMethod];
+                        const paymentMethodId = sale.paymentMethodId;
+                        const paymentMethod = globalState.paymentMethods.find(
+                          (p) => p.id === paymentMethodId
+                        );
+                        value = paymentMethod?.name || "Não encontrado";
                       } else if (attr === "createdAt") {
                         value = formatDate(sale.createdAt, true);
                       } else if (attr === "products") {
@@ -341,22 +362,25 @@ export function Registrations({ globalState }: Props) {
 
                   {isAdmin && (
                     <>
-                      <Tooltip title="Editar">
-                        <TableCell>
-                          <Button
-                            color="secondary"
-                            disabled={isWaitingAsync}
-                            onClick={() =>
-                              setCreatingDataType({
-                                dataType,
-                                editingData: el,
-                              })
-                            }
-                          >
-                            <EditOutlinedIcon />
-                          </Button>
-                        </TableCell>
-                      </Tooltip>
+                      {dataType !== "paymentMethods" && (
+                        <Tooltip title="Editar">
+                          <TableCell>
+                            <Button
+                              color="secondary"
+                              disabled={isWaitingAsync}
+                              onClick={() =>
+                                setCreatingDataType({
+                                  dataType,
+                                  editingData: el,
+                                })
+                              }
+                            >
+                              <EditOutlinedIcon />
+                            </Button>
+                          </TableCell>
+                        </Tooltip>
+                      )}
+
                       <Tooltip
                         title={
                           dataType === "collaborators" &&

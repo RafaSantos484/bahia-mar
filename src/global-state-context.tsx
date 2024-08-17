@@ -17,8 +17,10 @@ import {
   Sales,
   Sale,
   CollaboratorType,
+  PaymentMethods,
+  PaymentMethod,
 } from "./types";
-import { Unsubscribe, User } from "firebase/auth";
+import { User } from "firebase/auth";
 import {
   onAuthStateChange,
   onCollectionChange,
@@ -31,6 +33,7 @@ export type GlobalState = {
   clients: Clients;
   products: Products;
   collaborators: Collaborators;
+  paymentMethods: PaymentMethods;
   sales: Sales;
 };
 
@@ -44,12 +47,6 @@ type GlobalStateProviderProps = {
   children: ReactNode;
 };
 
-let loggedUserUnsubscriber: Unsubscribe | undefined = undefined;
-let vehiclesUnsubscriber: Unsubscribe | undefined = undefined;
-let clientsUnsubscriber: Unsubscribe | undefined = undefined;
-let productsUnsubscriber: Unsubscribe | undefined = undefined;
-let collaboratorsUnsubscriber: Unsubscribe | undefined = undefined;
-let salesUnsubscriber: Unsubscribe | undefined = undefined;
 export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [globalState, setGlobalState] = useState<
     GlobalState | null | undefined
@@ -63,6 +60,9 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   const [vehicles, setVehicles] = useState<Vehicles | undefined>(undefined);
   const [clients, setClients] = useState<Clients | undefined>(undefined);
   const [products, setProducts] = useState<Products | undefined>(undefined);
+  const [paymentMethods, setPaymentMethods] = useState<
+    PaymentMethods | undefined
+  >(undefined);
   const [collaborators, setCollaborators] = useState<Collaborators | undefined>(
     undefined
   );
@@ -75,141 +75,76 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
   }, []);
 
   useEffect(() => {
-    if (!!loggedUserUnsubscriber) {
-      loggedUserUnsubscriber();
-      loggedUserUnsubscriber = undefined;
-    }
-
     if (!!user) {
-      loggedUserUnsubscriber = onDocChange("collaborators", user.uid, (doc) => {
+      return onDocChange("collaborators", user.uid, (doc) => {
         const data = doc.data() as any;
         setLoggedUser({ ...data, id: user.uid });
       });
     }
-
-    return () => {
-      if (!!loggedUserUnsubscriber) {
-        loggedUserUnsubscriber();
-        loggedUserUnsubscriber = undefined;
-      }
-    };
   }, [user]);
   useEffect(() => {
-    if (!!vehiclesUnsubscriber) {
-      vehiclesUnsubscriber();
-      vehiclesUnsubscriber = undefined;
-    }
-
     if (!!user) {
-      vehiclesUnsubscriber = onCollectionChange("vehicles", (collection) => {
+      return onCollectionChange("vehicles", (collection) => {
         const data = collection.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as Vehicle)
         );
         setVehicles(data);
       });
     }
-
-    return () => {
-      if (!!vehiclesUnsubscriber) {
-        vehiclesUnsubscriber();
-        vehiclesUnsubscriber = undefined;
-      }
-    };
   }, [user]);
   useEffect(() => {
-    if (!!clientsUnsubscriber) {
-      clientsUnsubscriber();
-      clientsUnsubscriber = undefined;
-    }
-
     if (!!user) {
-      clientsUnsubscriber = onCollectionChange("clients", (collection) => {
+      return onCollectionChange("clients", (collection) => {
         const data = collection.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as Client)
         );
         setClients(data);
       });
     }
-
-    return () => {
-      if (!!clientsUnsubscriber) {
-        clientsUnsubscriber();
-        clientsUnsubscriber = undefined;
-      }
-    };
   }, [user]);
   useEffect(() => {
-    if (!!productsUnsubscriber) {
-      productsUnsubscriber();
-      productsUnsubscriber = undefined;
-    }
-
     if (!!user) {
-      productsUnsubscriber = onCollectionChange("products", (collection) => {
+      return onCollectionChange("products", (collection) => {
         const data = collection.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as Product)
         );
         setProducts(data);
       });
     }
-
-    return () => {
-      if (!!productsUnsubscriber) {
-        productsUnsubscriber();
-        productsUnsubscriber = undefined;
-      }
-    };
   }, [user]);
   useEffect(() => {
-    if (!!collaboratorsUnsubscriber) {
-      collaboratorsUnsubscriber();
-      collaboratorsUnsubscriber = undefined;
+    if (!!user) {
+      return onCollectionChange("paymentMethods", (collection) => {
+        const data = collection.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as PaymentMethod)
+        );
+        setPaymentMethods(data);
+      });
     }
-
+  }, [user]);
+  useEffect(() => {
     if (!!user && !!loggedUser) {
       if (loggedUser.type === CollaboratorType.Admin) {
-        collaboratorsUnsubscriber = onCollectionChange(
-          "collaborators",
-          (collection) => {
-            const data = collection.docs.map(
-              (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
-            );
-            setCollaborators(data);
-          }
-        );
+        return onCollectionChange("collaborators", (collection) => {
+          const data = collection.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() } as Collaborator)
+          );
+          setCollaborators(data);
+        });
       } else {
         setCollaborators([]);
       }
     }
-
-    return () => {
-      if (!!collaboratorsUnsubscriber) {
-        collaboratorsUnsubscriber();
-        collaboratorsUnsubscriber = undefined;
-      }
-    };
   }, [user, loggedUser]);
   useEffect(() => {
-    if (!!salesUnsubscriber) {
-      salesUnsubscriber();
-      salesUnsubscriber = undefined;
-    }
-
     if (!!user) {
-      salesUnsubscriber = onCollectionChange("sales", (collection) => {
+      return onCollectionChange("sales", (collection) => {
         const data = collection.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as Sale)
         );
         setSales(data);
       });
     }
-
-    return () => {
-      if (!!salesUnsubscriber) {
-        salesUnsubscriber();
-        salesUnsubscriber = undefined;
-      }
-    };
   }, [user]);
 
   useEffect(() => {
@@ -221,19 +156,31 @@ export function GlobalStateProvider({ children }: GlobalStateProviderProps) {
       !clients ||
       !products ||
       !collaborators ||
+      !paymentMethods ||
       !sales
-    )
+    ) {
       setGlobalState(undefined);
-    else
+    } else {
       setGlobalState({
         loggedUser,
         vehicles,
         clients,
         products,
         collaborators,
+        paymentMethods,
         sales,
       });
-  }, [user, loggedUser, vehicles, clients, products, collaborators, sales]);
+    }
+  }, [
+    user,
+    loggedUser,
+    vehicles,
+    clients,
+    products,
+    collaborators,
+    paymentMethods,
+    sales,
+  ]);
 
   return (
     <GlobalStateContext.Provider value={globalState}>

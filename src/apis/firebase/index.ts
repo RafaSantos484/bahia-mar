@@ -7,7 +7,6 @@ import {
   User,
 } from "firebase/auth";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -16,7 +15,6 @@ import {
   getFirestore,
   onSnapshot,
   QuerySnapshot,
-  serverTimestamp,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -67,17 +65,6 @@ export function onDocChange(
 export async function setDocument(path: string, id: string, data: any) {
   const dbRef = doc(db, path, id);
   await setDoc(dbRef, data);
-}
-export async function pushDocument(
-  path: string,
-  data: any,
-  withCreatedAt = true
-) {
-  const dbRef = collection(db, path);
-
-  if (withCreatedAt) data.createdAt = serverTimestamp();
-  const result = await addDoc(dbRef, data);
-  return result.id;
 }
 export async function updateDocument(path: string, id: string, data: any) {
   const docRef = doc(db, path, id);
