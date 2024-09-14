@@ -7,7 +7,7 @@ const themes = createTheme({
         main: '#214F6E', // Cor primária
       },
       secondary: {
-        main: '#ff4081', // Cor secundária
+        main: '#1ABCC7', // Cor secundária
       },
       background: {
         default: '#f5f5f5', // Cor de fundo

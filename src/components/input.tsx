@@ -1,6 +1,5 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
-import { SxProps, Theme } from '@mui/material/styles';
 
 interface InputProps {
     label?: string;

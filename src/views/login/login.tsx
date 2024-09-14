@@ -1,8 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
 import "./login.scss";
-import Logo from "../../assets/logo.png";
-import { TextField, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../apis/firebase";
 import LoadingScreen from "../../components/loading-screen";
@@ -13,6 +12,7 @@ import themes from "../../themes/themes";
 
 import Button from '../../components/button'
 import Input from "../../components/input";
+import Header from "../../components/header";
 
 
 export default function Login() {
@@ -74,13 +74,7 @@ export default function Login() {
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
       <ThemeProvider theme={themes}>
-        <img
-          src={Logo}
-          className="logo"
-          draggable={false}
-          alt="Bahia Mar Distribuidora de Água"
-        />
-
+        <Header />
         <form onSubmit={handleSubmit} className="form">
           <Input
             label="E-mail"
@@ -108,6 +102,7 @@ export default function Login() {
           >
             Entrar
           </Button>
+          <a href="/senha" style={{color: 'black'}}>Esqueceu sua senha? Clique aqui para recuperar.</a>
         </form>
       </ThemeProvider>
     </div>
