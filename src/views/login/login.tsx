@@ -2,20 +2,17 @@ import { FormEvent, useEffect, useState } from "react";
 
 import "./login.scss";
 import Logo from "../../assets/logo.png";
-import { Button, createTheme, TextField, ThemeProvider } from "@mui/material";
+import { TextField, ThemeProvider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../apis/firebase";
 import LoadingScreen from "../../components/loading-screen";
 import CustomAlert, { AlertInfo } from "../../components/custom-alert";
 import { useGlobalState } from "../../global-state-context";
 
-const themes = createTheme({
-  palette: {
-    primary: {
-      main: "#214f6e",
-    },
-  },
-});
+import themes from "../../themes/themes";
+
+import Button from '../../components/button'
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -108,9 +105,8 @@ export default function Login() {
 
           <Button
             type="submit"
-            variant="contained"
-            className="login-btn"
             disabled={isWaitingAsync}
+            size="large"
           >
             Entrar
           </Button>
