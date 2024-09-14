@@ -8,14 +8,11 @@
   }
 
   .form {
-    width: 50%;
+    width: 100%;
     margin: 10vh 0;
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    .textfield {
-      margin: 2vh 0;
-    }
   }
 }

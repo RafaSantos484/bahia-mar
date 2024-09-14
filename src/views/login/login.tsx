@@ -12,6 +12,7 @@ import { useGlobalState } from "../../global-state-context";
 import themes from "../../themes/themes";
 
 import Button from '../../components/button'
+import Input from "../../components/input";
 
 
 export default function Login() {
@@ -81,27 +82,24 @@ export default function Login() {
         />
 
         <form onSubmit={handleSubmit} className="form">
-          <TextField
-            className="textfield"
+          <Input
             label="E-mail"
-            type="email"
-            variant="outlined"
-            fullWidth
             required
+            type="email"
             value={email}
+            fullWidth
             onChange={(e) => setEmail(e.target.value.trim())}
           />
-          <TextField
-            className="textfield"
+          <Input
             label="Senha"
             type="password"
-            variant="outlined"
             fullWidth
             required
             inputProps={{ minLength: 6, maxLength: 15 }}
             value={password}
             onChange={(e) => setPassword(e.target.value.trim())}
           />
+
 
           <Button
             type="submit"
