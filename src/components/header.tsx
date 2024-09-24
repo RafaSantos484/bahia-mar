@@ -14,6 +14,7 @@ export default function Header() {
                 alignItems: 'center',
                 borderBottomRightRadius: '3.5rem',
                 borderBottomLeftRadius: '3.5rem',
+                boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.3)',
             }}
         >
             <WaterIcon sx={{
