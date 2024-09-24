@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import {
   getAuth,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   User,
@@ -49,6 +50,9 @@ export async function login(email: string, password: string) {
 }
 export async function logout() {
   await signOut(auth);
+}
+export async function sendRecoverPasswordEmail(email: string) {
+  await sendPasswordResetEmail(auth, email);
 }
 export function onAuthStateChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);

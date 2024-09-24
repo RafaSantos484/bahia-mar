@@ -176,7 +176,6 @@ export default function RegisterPopUp({
       } else if (dataType === "clients") {
       } else if (dataType === "products") {
         _data.price = Number(_data.price.replace(",", "."));
-        const _editingData = editingData as Product;
 
         if (isNaN(_data.price) || _data.price <= 0)
           return setAlertInfo({
@@ -186,6 +185,7 @@ export default function RegisterPopUp({
 
         _data.photoSrc = _data.photoSrc || "";
         if (isEditing) {
+          const _editingData = editingData as Product;
           if (_editingData.photoSrc === _data.photoSrc) {
             delete _data.photoSrc;
           } else if (!!_data.photoSrc) {

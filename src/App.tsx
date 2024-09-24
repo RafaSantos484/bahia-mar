@@ -4,6 +4,7 @@ import "./global.scss";
 import Login from "./views/login/login";
 import Dashboard from "./views/dashboard/dashboard";
 import { GlobalStateProvider } from "./global-state-context";
+import RecoverPassword from "./views/login/recover-password";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Login />} path="/" />
+          <Route element={<RecoverPassword />} path="/recuperar-senha" />
           <Route element={<Dashboard />} path="/dashboard" />
         </Routes>
       </BrowserRouter>
