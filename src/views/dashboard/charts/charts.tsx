@@ -39,7 +39,6 @@ export function Charts({ globalState }: Props) {
           </Select>
         </FormControl>
       </div>
-
       {selectedReport === "Vendas" && <SalesCharts globalState={globalState} />}
       {selectedReport === "Clientes" && (
         <ClientsCharts globalState={globalState} />

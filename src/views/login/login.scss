@@ -2,6 +2,11 @@
   align-items: center;
   height: 100vh;
   padding: 0;
+  animation: fade-in 1s ease;
+  
+  &.fade-out {
+    animation: fade-out 1s ease forwards;
+  }
 
   .logo {
     width: 35vw;
@@ -14,6 +19,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-
   }
+
 }

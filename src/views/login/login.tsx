@@ -24,6 +24,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isFadeOut, setIsFadeOut] = useState(false);
 
   useEffect(() => {
     if (!!globalState) {
@@ -34,6 +35,8 @@ export default function Login() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isWaitingAsync) return;
+
+    setIsFadeOut(true);
 
     setIsWaitingAsync(true);
     try {
@@ -54,6 +57,7 @@ export default function Login() {
             severity: "error",
             message: `Falha ao tentar realizar login`,
           });
+          setIsFadeOut(false);
           break;
       }
     } finally {
@@ -70,7 +74,7 @@ export default function Login() {
   }
 
   return (
-    <div className="global-fullscreen-container login-container">
+    <div className={`global-fullscreen-container login-container ${isFadeOut ? "fade-out" : ""}`}>
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
       <ThemeProvider theme={themes}>

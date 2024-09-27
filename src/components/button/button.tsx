@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import ButtonMUI from "@mui/material/Button";
 
-import './button.css'
+import './button.scss'
 
 interface ButtonsProps {
   children?: ReactNode;

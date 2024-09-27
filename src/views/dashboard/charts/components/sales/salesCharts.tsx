@@ -170,121 +170,131 @@ export function SalesCharts({ globalState }: Props) {
   return (
     <div className="sales-charts-container">
       <div className="charts-container">
-        <DateLineChart
-          chartProps={{
-            dataset: salesPerDateDayset,
-            xAxis: [
+        <div className="chart1">
+          <DateLineChart
+            chartProps={{
+              dataset: salesPerDateDayset,
+              xAxis: [
+                {
+                  scaleType: "band",
+                  dataKey: "date",
+                  valueFormatter: (value: string) =>
+                    value.split("-").reverse().join("/"),
+                },
+              ],
+              series: [
+                {
+                  dataKey: "value",
+                },
+              ],
+            }}
+            Title={
+              <div className="chart-title">
+                <PaidIcon />
+                <span>Faturamento</span>
+              </div>
+            }
+            style={{ width: "98%", paddingBottom: '8vh' }}
+          />
+        </div>
+
+        <div className="chart2">
+          <CustomBarChart
+            dataset={salesPerCollaborator.earning as any}
+            xAxis={[
               {
                 scaleType: "band",
-                dataKey: "date",
-                valueFormatter: (value: string) =>
-                  value.split("-").reverse().join("/"),
+                dataKey: "label",
+                valueFormatter: (obj: any) => obj.value,
               },
-            ],
-            series: [
+            ]}
+            series={[
               {
                 dataKey: "value",
               },
-            ],
-          }}
-          Title={
-            <div className="chart-title">
-              <PaidIcon />
-              <span>Faturamento</span>
-            </div>
-          }
-          style={{ width: "98%", paddingBottom: '8vh' }}
-        />
+            ]}
+            Title={
+              <div className="chart-title">
+                <AccountCircleIcon />
+                <span>Faturamento por Funcionário</span>
+              </div>
+            }
+            style={{ paddingBottom: '8vh' }}
+          />
+        </div>
+        <div className="chart3">
+          <CustomBarChart
+            dataset={salesPerCollaborator.count as any}
+            xAxis={[
+              {
+                scaleType: "band",
+                dataKey: "label",
+                valueFormatter: (obj: any) => obj.value,
+              },
+            ]}
+            series={[
+              {
+                dataKey: "value",
+              },
+            ]}
+            Title={
+              <div className="chart-title">
+                <LocalOfferIcon />
+                <span>Vendas por Funcionário</span>
+              </div>
+            }
+            style={{ paddingBottom: '8vh' }}
+          />
+        </div>
 
-        <CustomBarChart
-          dataset={salesPerCollaborator.earning as any}
-          xAxis={[
-            {
-              scaleType: "band",
-              dataKey: "label",
-              valueFormatter: (obj: any) => obj.value,
-            },
-          ]}
-          series={[
-            {
-              dataKey: "value",
-            },
-          ]}
-          Title={
-            <div className="chart-title">
-              <AccountCircleIcon />
-              <span>Faturamento por Funcionário</span>
-            </div>
-          }
-          style={{ paddingBottom: '8vh' }}
-        />
-        <CustomBarChart
-          dataset={salesPerCollaborator.count as any}
-          xAxis={[
-            {
-              scaleType: "band",
-              dataKey: "label",
-              valueFormatter: (obj: any) => obj.value,
-            },
-          ]}
-          series={[
-            {
-              dataKey: "value",
-            },
-          ]}
-          Title={
-            <div className="chart-title">
-              <LocalOfferIcon />
-              <span>Vendas por Funcionário</span>
-            </div>
-          }
-          style={{ paddingBottom: '8vh' }}
-        />
-
-        <CustomBarChart
-          dataset={salesPerProduct.earning as any}
-          xAxis={[
-            {
-              scaleType: "band",
-              dataKey: "label",
-              valueFormatter: (obj: any) => obj.value,
-            },
-          ]}
-          series={[
-            {
-              dataKey: "value",
-            },
-          ]}
-          Title={
-            <div className="chart-title">
-              <LocalDrinkIcon />
-              <span>Faturamento por Produto</span>
-            </div>
-          }
-          style={{ paddingBottom: '8vh' }}
-        />
-        <CustomBarChart
-          dataset={salesPerProduct.count as any}
-          xAxis={[
-            {
-              scaleType: "band",
-              dataKey: "label",
-              valueFormatter: (obj: any) => obj.value,
-            },
-          ]}
-          series={[
-            {
-              dataKey: "value",
-            },
-          ]}
-          Title={
-            <div className="chart-title">
-              <LocalOfferIcon />
-              <span>Vendas por Produto</span>
-            </div>
-          }
-          style={{ paddingBottom: '8vh' }}
-        />
+        <div className="chart4">
+          <CustomBarChart
+            dataset={salesPerProduct.earning as any}
+            xAxis={[
+              {
+                scaleType: "band",
+                dataKey: "label",
+                valueFormatter: (obj: any) => obj.value,
+              },
+            ]}
+            series={[
+              {
+                dataKey: "value",
+              },
+            ]}
+            Title={
+              <div className="chart-title">
+                <LocalDrinkIcon />
+                <span>Faturamento por Produto</span>
+              </div>
+            }
+            style={{ paddingBottom: '8vh' }}
+          />
+        </div>
+        <div className="chart5">
+          <CustomBarChart
+            dataset={salesPerProduct.count as any}
+            xAxis={[
+              {
+                scaleType: "band",
+                dataKey: "label",
+                valueFormatter: (obj: any) => obj.value,
+              },
+            ]}
+            series={[
+              {
+                dataKey: "value",
+              },
+            ]}
+            Title={
+              <div className="chart-title">
+                <LocalOfferIcon />
+                <span>Vendas por Produto</span>
+              </div>
+            }
+            style={{ paddingBottom: '8vh' }}
+          />
+        </div>
       </div>
     </div>
   );

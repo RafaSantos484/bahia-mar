@@ -2,6 +2,7 @@
   align-items: center;
   justify-content: center;
   min-width: 700px;
+  animation: fade-in 1s ease;
 
   .content-container {
     width: 100%;
@@ -9,8 +10,6 @@
     display: flex;
 
     .left-bar-container {
-      // margin-right: 2vw;
-      // border-radius: 8px;
       background-color: #214f6e;
       transition: width 300ms;
       display: flex;

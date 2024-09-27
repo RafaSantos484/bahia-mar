@@ -16,6 +16,22 @@
     flex-wrap: wrap;
     overflow: auto;
 
+    .chart1 {
+      animation: slide-in 1s ease;
+    }
+    .chart2 {
+      animation: slide-in 2s ease;
+    }
+    .chart3 {
+      animation: slide-in 2.5s ease;
+    }
+    .chart4 {
+      animation: slide-in 3s ease;
+    }
+    .chart5 {
+      animation: slide-in 3.5s ease;
+    }
+
     /*.chart-container {
       display: flex;
       flex-direction: column;
