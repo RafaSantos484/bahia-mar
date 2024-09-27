@@ -12,7 +12,7 @@ import "./login.scss";
 import themes from "../../themes/themes";
 
 import Button from "../../components/button/button";
-import Input from "../../components/input";
+import Input from "../../components/input/input";
 import Header from "../../components/header";
 
 export default function Login() {

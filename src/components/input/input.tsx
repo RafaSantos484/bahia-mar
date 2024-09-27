@@ -1,6 +1,8 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
 
+import './input.css'
+
 interface InputProps {
     label?: string;
     type?: 'text' | 'password' | 'email' | 'number';
@@ -22,10 +24,8 @@ export default function Input({ label, required, type, value, fullWidth, onChang
             fullWidth={fullWidth}
             onChange={onChange}
             inputProps={inputProps}
-            size="medium"
+            className='input-container'
             sx={{
-                margin: '2rem 0',
-                width: '70%',
                 '& .MuiOutlinedInput-root': {
                     fontSize: '2rem',
                     borderRadius: '1.5rem',
@@ -35,7 +35,6 @@ export default function Input({ label, required, type, value, fullWidth, onChang
                     fontSize: '2rem',
                 },
                 '@media (max-width: 600px)': { 
-                    width: '90%',
                     '& .MuiOutlinedInput-root': {
                         fontSize: '1.5rem',
                         borderRadius: '1rem',
@@ -43,9 +42,6 @@ export default function Input({ label, required, type, value, fullWidth, onChang
                     '& .MuiInputLabel-root': {
                         fontSize: '1.5rem',
                     },
-                },
-                '@media (min-width: 600px) and (max-width: 960px)': { 
-                    width: '85%'
                 },
             }}
         />

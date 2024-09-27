@@ -24,8 +24,6 @@ export default function Button({
 
   const sizeClass = size === "large" ? "button-large" : "button-medium";
 
-  style = style || {};
-
   return (
     <ButtonMUI
       variant="contained"
@@ -34,6 +32,7 @@ export default function Button({
       color="primary"
       onClick={onClick}
       className={`button-container ${sizeClass}`}
+      sx = {{}}
     >
       {children}
     </ButtonMUI>
