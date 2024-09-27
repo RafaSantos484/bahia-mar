@@ -9,7 +9,7 @@ import { useGlobalState } from "../../global-state-context";
 import "./login.scss";
 import themes from "../../themes/themes";
 
-import Button from "../../components/button";
+import Button from "../../components/button/button";
 import Input from "../../components/input";
 import Header from "../../components/header";
 import ConfirmPopUp, {

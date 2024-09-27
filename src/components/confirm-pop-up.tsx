@@ -1,5 +1,5 @@
 import { CheckCircleOutline, HighlightOffOutlined } from "@mui/icons-material";
-import Button from "./button";
+import Button from "./button/button";
 
 export type ConfirmPopUpInfo = {
   type: "success" | "error";
