@@ -8,6 +8,9 @@
     margin: 1rem 0;
     transition: 0.3s ease;
 }
+.button-container:hover {
+    transform: scale(1.01);
+}
 
 .button-large {
     font-size: 2.5rem  !important;
@@ -15,20 +18,9 @@
 }
 
 .button-medium {
-    font-size: 2rem  !important;
-    width: 24rem;
-}
-
-.button-large:hover {
-    width: 32.5rem;
-    height: 5.25rem;
-    font-size: 2.6rem;
-}
-
-.button-medium:hover {
-    width: 24.5rem;
-    height: 5.25rem;
-    font-size: 2.1rem;
+    font-size: 1rem  !important;
+    width: 16rem;
+    border-radius: 0.7rem !important;
 }
 
 @media (min-width: 600px) and (max-width: 960px) {

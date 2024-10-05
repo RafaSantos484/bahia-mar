@@ -5,8 +5,7 @@
 }
 
 .input-container:focus-within {
-    margin: 2rem 0;
-    width: 70.5% !important;
+    transform: scale(1.01);
 }
 
 @media (max-width: 600px) { 

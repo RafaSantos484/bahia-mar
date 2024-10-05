@@ -1,8 +1,11 @@
 .table-container {
-  flex: 1;
-  margin: 0 1vw;
-  overflow: auto;
-  animation: fade-in 5s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: space-around;
+  padding: 0 2.5%;
+  animation: fade-in 2s ease;
+  width: 100% !important;
+  gap: 2.5%;
 
 
   .upper-table-menu-container {
@@ -15,4 +18,5 @@
       height: fit-content;
     }
   }
+
 }

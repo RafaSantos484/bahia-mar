@@ -14,7 +14,7 @@ import {
   CreatingDataType,
   DataType,
   dataTypeTranslator,
-} from "../views/dashboard/registrations/registrations";
+} from "../../views/dashboard/registrations/registrations";
 import {
   DeleteOutlineOutlined,
   EditOutlined,
@@ -39,17 +39,19 @@ import {
   vehicleAttrsTranslator,
   VehicleType,
   vehicleTypeLabels,
-} from "../types";
+} from "../../types";
 import {
   formatAddress,
   formatDate,
   formatVehicle,
   getSaleValue,
-} from "../utils";
-import { GlobalState } from "../global-state-context";
+} from "../../utils";
+import { GlobalState } from "../../global-state-context";
 import { useState } from "react";
-import { deleteData } from "../apis/firebase";
-import { AlertInfo } from "./custom-alert";
+import { deleteData } from "../../apis/firebase";
+import { AlertInfo } from "../custom-alert";
+
+import './dashboard-table.scss'
 
 const tableCols = {
   sales: [
@@ -101,7 +103,7 @@ export default function DashboardTable({
   const isWaitingAsync = isWaitingAsyncGetSet();
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} className="main-table-box">
       <Popover
         id="mouse-over-popover"
         disableRestoreFocus
@@ -129,7 +131,7 @@ export default function DashboardTable({
         />
       </Popover>
 
-      <Table stickyHeader sx={{ borderColor: "secondary" }}>
+      <Table>
         <TableHead>
           <TableRow>
             {tableCols[dataType].map((attr) => {
@@ -156,13 +158,13 @@ export default function DashboardTable({
                 {dataType !== "paymentMethods" && (
                   <Tooltip title="Editar">
                     <TableCell>
-                      <EditOutlined />
+                      <p>Editar</p>
                     </TableCell>
                   </Tooltip>
                 )}
                 <Tooltip title="Deletar">
                   <TableCell>
-                    <DeleteOutlineOutlined color="error" />
+                    <p>Deletar</p>
                   </TableCell>
                 </Tooltip>
               </>
@@ -170,10 +172,10 @@ export default function DashboardTable({
           </TableRow>
         </TableHead>
 
-        <TableBody>
+        <TableBody >
           {globalState[dataType].map((el) => {
             return (
-              <TableRow key={el.id}>
+              <TableRow key={el.id} className="table-row">
                 {tableCols[dataType].map((attr) => {
                   let value = "";
                   let color = "";
@@ -187,7 +189,7 @@ export default function DashboardTable({
                     if (attr === "type")
                       value =
                         collaboratorTypeLabels[
-                          (el as Collaborator).type as CollaboratorType
+                        (el as Collaborator).type as CollaboratorType
                         ];
                   } else if (dataType === "vehicles") {
                     if (attr === "type")
@@ -290,6 +292,7 @@ export default function DashboardTable({
                       <Tooltip title="Editar">
                         <TableCell>
                           <Button
+                            className="button-icon"
                             color="secondary"
                             disabled={isWaitingAsync}
                             onClick={() =>
@@ -308,13 +311,14 @@ export default function DashboardTable({
                     <Tooltip
                       title={
                         dataType === "collaborators" &&
-                        el.id === globalState.loggedUser.id
+                          el.id === globalState.loggedUser.id
                           ? ""
                           : "Deletar"
                       }
                     >
                       <TableCell>
                         <Button
+                          className="button-icon"
                           color="error"
                           disabled={
                             isWaitingAsync ||

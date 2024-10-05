@@ -1,10 +1,3 @@
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
 import { useState } from "react";
 
 import "./registrations.scss";
@@ -21,7 +14,9 @@ import {
 import RegisterPopUp from "./register-pop-up";
 import CustomAlert, { AlertInfo } from "../../../components/custom-alert";
 import LogoHeader from "../../../components/logo-header";
-import DashboardTable from "../../../components/dashboard-table";
+import DashboardTable from "../../../components/dashboard-table/dashboard-table";
+import Button from "../../../components/button/button";
+import Select from "../../../components/select-input/select-input";
 
 export type DataType =
   | "vehicles"
@@ -49,12 +44,12 @@ type Props = {
 export type CreatingDataType = {
   dataType: DataType;
   editingData?:
-    | Vehicle
-    | Client
-    | Product
-    | Collaborator
-    | PaymentMethod
-    | Sale;
+  | Vehicle
+  | Client
+  | Product
+  | Collaborator
+  | PaymentMethod
+  | Sale;
 };
 
 export function Registrations({ globalState }: Props) {
@@ -62,7 +57,7 @@ export function Registrations({ globalState }: Props) {
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
 
-  const [dataType, setDataType] = useState<DataType>("sales");
+  const [dataType] = useState<DataType>("sales");
   const [creatingDataType, setCreatingDataType] = useState<
     CreatingDataType | undefined
   >(undefined);
@@ -83,60 +78,38 @@ export function Registrations({ globalState }: Props) {
       )}
 
       <div className="upper-table-menu-container">
-        {isAdmin && (
-          <FormControl
-            className="data-type-select-container"
-            disabled={isWaitingAsync}
-          >
-            <InputLabel id="data-type-select-label">Dado da tabela</InputLabel>
-            <Select
-              labelId="data-type-select-label"
-              label="Dado da tabela"
-              value={dataType}
-              onChange={(e) => setDataType(e.target.value as DataType)}
-            >
-              {Object.entries(dataTypeTranslator).map(
-                ([type, translatedType]) => (
-                  <MenuItem key={type} value={type}>
-                    {translatedType.plural}
-                  </MenuItem>
-                )
-              )}
-            </Select>
-          </FormControl>
-        )}
+      <Select isWaitingAsync={false} isAdmin={true} />
 
         <Button
-          variant="contained"
-          color="primary"
           style={{ marginLeft: "auto" }}
           disabled={isWaitingAsync}
           onClick={() => setCreatingDataType({ dataType })}
         >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
       </div>
+      <div className="DashboardTable-box">
+        <DashboardTable
+          dataType={dataType}
+          isAdmin={isAdmin}
+          globalState={globalState}
+          creatingDataTypeGetSet={(newValue?: CreatingDataType) => {
+            if (!!newValue) {
+              setCreatingDataType(newValue);
+              return newValue;
+            }
 
-      <DashboardTable
-        dataType={dataType}
-        isAdmin={isAdmin}
-        globalState={globalState}
-        creatingDataTypeGetSet={(newValue?: CreatingDataType) => {
-          if (!!newValue) {
-            setCreatingDataType(newValue);
-            return newValue;
-          }
+            return creatingDataType;
+          }}
+          setAlertInfo={setAlertInfo}
+          isWaitingAsyncGetSet={(newValue?: boolean) => {
+            if (newValue !== undefined) {
+              setIsWaitingAsync(newValue);
+              return newValue;
+            }
 
-          return creatingDataType;
-        }}
-        setAlertInfo={setAlertInfo}
-        isWaitingAsyncGetSet={(newValue?: boolean) => {
-          if (newValue !== undefined) {
-            setIsWaitingAsync(newValue);
-            return newValue;
-          }
-
-          return isWaitingAsync;
-        }}
-      />
+            return isWaitingAsync;
+          }}
+        />
+      </div>
     </div>
   );
 }
