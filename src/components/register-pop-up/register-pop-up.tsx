@@ -13,6 +13,8 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
+import Button from "../button/button";
+
 import "./register-pop-up.scss";
 import {
   blobToString,
@@ -22,9 +24,8 @@ import {
   resizeImage,
   roundNumber,
   sleep,
-} from "../../../utils";
+} from "../../utils";
 import {
-  Button,
   Card,
   Checkbox,
   createTheme,
@@ -44,8 +45,8 @@ import {
   generateDocId,
   insertData,
   uploadFile,
-} from "../../../apis/firebase";
-import { AlertInfo } from "../../../components/custom-alert";
+} from "../../apis/firebase";
+import { AlertInfo } from "../custom-alert";
 import {
   Collaborator,
   Client,
@@ -56,10 +57,10 @@ import {
   ClientType,
   Sale,
   PaymentMethod,
-} from "../../../types";
-import { GlobalState } from "../../../global-state-context";
-import Logo from "../../../assets/logo.png";
-import { dataTypeTranslator, DataType } from "./registrations";
+} from "../../types";
+import { GlobalState } from "../../global-state-context";
+import Logo from "../../assets/logo.png";
+import { dataTypeTranslator, DataType } from "../../views/dashboard/registrations/registrations";
 
 const themes = createTheme({
   palette: {
@@ -397,14 +398,7 @@ export default function RegisterPopUp({
             </IconButton>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleImageChange}
-            />
+          <form onSubmit={handleSubmit} className="pop-up-box">
 
             {dataType === "vehicles" && (
               <>
@@ -660,7 +654,6 @@ export default function RegisterPopUp({
                     <Tooltip title="Fazer upload de foto">
                       <Button
                         onClick={() => fileInputRef.current?.click()}
-                        className="upload-btn"
                         disabled={isWaitingAsync}
                       >
                         <FileUploadOutlinedIcon />
@@ -1175,10 +1168,8 @@ export default function RegisterPopUp({
             )}
 
             <Button
-              variant="contained"
               type="submit"
               disabled={isWaitingAsync}
-              className="register-btn"
             >
               {isEditing ? "Editar" : "Cadastrar"}
             </Button>

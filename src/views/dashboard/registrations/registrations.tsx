@@ -11,7 +11,7 @@ import {
   Sale,
   Vehicle,
 } from "../../../types";
-import RegisterPopUp from "./register-pop-up";
+import RegisterPopUp from "../../../components/register-pop-up/register-pop-up";
 import CustomAlert, { AlertInfo } from "../../../components/custom-alert";
 import LogoHeader from "../../../components/logo-header";
 import DashboardTable from "../../../components/dashboard-table/dashboard-table";
@@ -56,11 +56,14 @@ export function Registrations({ globalState }: Props) {
   const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
+  const [dataType, setDataType] = useState<DataType>("sales");
+  const [creatingDataType, setCreatingDataType] = useState<CreatingDataType | undefined>(undefined);
 
-  const [dataType] = useState<DataType>("sales");
-  const [creatingDataType, setCreatingDataType] = useState<
-    CreatingDataType | undefined
-  >(undefined);
+  // Dados para o Select
+  const dataTypes = Object.entries(dataTypeTranslator).map(([type, translatedType]) => ({
+    value: type as DataType,
+    label: translatedType.plural,
+  }));
 
   return (
     <div className="global-table-container table-container">
@@ -78,7 +81,13 @@ export function Registrations({ globalState }: Props) {
       )}
 
       <div className="upper-table-menu-container">
-      <Select isWaitingAsync={false} isAdmin={true} />
+        <Select
+          isWaitingAsync={false}
+          isAdmin={true}
+          dataTypes={dataTypes}
+          selectedDataType={dataType}
+          setSelectedDataType={setDataType}
+        />
 
         <Button
           style={{ marginLeft: "auto" }}
@@ -96,7 +105,6 @@ export function Registrations({ globalState }: Props) {
               setCreatingDataType(newValue);
               return newValue;
             }
-
             return creatingDataType;
           }}
           setAlertInfo={setAlertInfo}
@@ -105,7 +113,6 @@ export function Registrations({ globalState }: Props) {
               setIsWaitingAsync(newValue);
               return newValue;
             }
-
             return isWaitingAsync;
           }}
         />
