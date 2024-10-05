@@ -5,15 +5,6 @@ import "./select-input.scss"
 
 type DataType = "vehicles" | "clients" | "products" | "collaborators" | "paymentMethods" | "sales";
 
-const dataTypeTranslator = {
-    sales: { plural: "Vendas", singular: "Venda" },
-    clients: { plural: "Clientes", singular: "Cliente" },
-    collaborators: { plural: "Colaboradores", singular: "Colaborador" },
-    products: { plural: "Produtos", singular: "Produto" },
-    vehicles: { plural: "Veículos", singular: "Veículo" },
-    paymentMethods: { plural: "Mét. de pagamento", singular: "Mét. de pagamento" },
-};
-
 type SelectProps = {
     isWaitingAsync: boolean;
     isAdmin: boolean;
