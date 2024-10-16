@@ -44,12 +44,12 @@ type Props = {
 export type CreatingDataType = {
   dataType: DataType;
   editingData?:
-  | Vehicle
-  | Client
-  | Product
-  | Collaborator
-  | PaymentMethod
-  | Sale;
+    | Vehicle
+    | Client
+    | Product
+    | Collaborator
+    | PaymentMethod
+    | Sale;
 };
 
 export function Registrations({ globalState }: Props) {
@@ -57,13 +57,17 @@ export function Registrations({ globalState }: Props) {
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
   const [dataType, setDataType] = useState<DataType>("sales");
-  const [creatingDataType, setCreatingDataType] = useState<CreatingDataType | undefined>(undefined);
+  const [creatingDataType, setCreatingDataType] = useState<
+    CreatingDataType | undefined
+  >(undefined);
 
   // Dados para o Select
-  const dataTypes = Object.entries(dataTypeTranslator).map(([type, translatedType]) => ({
-    value: type as DataType,
-    label: translatedType.plural,
-  }));
+  const dataTypes = Object.entries(dataTypeTranslator).map(
+    ([type, translatedType]) => ({
+      value: type as DataType,
+      label: translatedType.plural,
+    })
+  );
 
   return (
     <div className="global-table-container table-container">
