@@ -10,12 +10,10 @@ import {
   dataTypeTranslator,
   PopupData,
 } from "../../views/dashboard/registrations/registrations";
-import PaymentMethodForm, {
-  PaymentMethodFormData,
-} from "./forms/payment-method-form";
-import VehicleForm, { VehicleFormData } from "./forms/vehicle-form";
-import { ClientType, VehicleType } from "../../types";
-import ClientForm, { ClientFormData } from "./forms/client-form";
+import PaymentMethodForm from "./forms/payment-method-form";
+import VehicleForm from "./forms/vehicle-form";
+import ClientForm from "./forms/client-form";
+import CollaboratorForm from "./forms/collaborator-form";
 
 const themes = createTheme({
   palette: {
@@ -28,49 +26,12 @@ const themes = createTheme({
   },
 });
 
-type FormData = PaymentMethodFormData | VehicleFormData | ClientFormData;
-
 type Props = {
   close: () => void;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
   popupData: PopupData;
   fadeTime?: number;
 };
-
-function getInitialData(popupData: PopupData): FormData {
-  const { dataType, editingData } = popupData;
-  if (dataType === "paymentMethods") {
-    return { ...popupData, data: { name: editingData?.name || "" } };
-  } else if (dataType === "vehicles") {
-    return {
-      ...popupData,
-      data: {
-        type: editingData?.type || VehicleType.Motorcycle,
-        brand: editingData?.brand || "",
-        model: editingData?.model || "",
-        plate: editingData?.plate || "",
-      },
-    };
-  } else if (dataType === "clients") {
-    return {
-      ...popupData,
-      data: {
-        type: editingData?.type || ClientType.Individual,
-        name: editingData?.name || "",
-        phone: editingData?.phone || "",
-        cpfCnpj: editingData?.cpfCnpj || "",
-        cep: editingData?.cep || "",
-        city: editingData?.city || "",
-        neighborhood: editingData?.neighborhood || "",
-        street: editingData?.street || "",
-        number: editingData?.number || "",
-        complement: editingData?.complement || "",
-      },
-    };
-  }
-
-  return { dataType: "paymentMethods", data: { name: "" } };
-}
 
 export function Divider({ text }: { text: string }) {
   return (
@@ -93,8 +54,6 @@ export default function RegisterPopUp({
 
   const [isOpen, setIsOpen] = useState(true);
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
-
-  const [data, setData] = useState(getInitialData(popupData));
 
   async function _close() {
     setIsOpen(false);
@@ -130,20 +89,19 @@ export default function RegisterPopUp({
               vehicles: VehicleForm,
               clients: ClientForm,
               products: PaymentMethodForm,
-              collaborators: PaymentMethodForm,
+              collaborators: CollaboratorForm,
               paymentMethods: PaymentMethodForm,
               sales: PaymentMethodForm,
             };
 
-            const FormComponent = formsDict[dataType] as any;
+            const FormComponent = formsDict[dataType];
             return (
               <FormComponent
-                formData={data}
-                setFormData={setData}
                 isWaitingAsync={isWaitingAsync}
                 setIsWaitingAsync={setIsWaitingAsync}
                 setAlertInfo={setAlertInfo}
                 close={_close}
+                editingData={editingData as any}
               />
             );
           })()}

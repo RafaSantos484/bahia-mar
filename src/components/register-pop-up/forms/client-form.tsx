@@ -5,7 +5,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { AlertInfo } from "../../custom-alert";
 import { getTrimmed } from "../../../utils";
 import { useGlobalState } from "../../../global-state-context";
@@ -14,42 +14,36 @@ import { editData, insertData } from "../../../apis/firebase";
 import { Client, ClientType } from "../../../types";
 import { Divider } from "../register-pop-up";
 
-export type ClientFormData = {
-  dataType: "clients";
-  data: {
-    type: ClientType;
-    name: string;
-    phone: string;
-    cpfCnpj: string;
-    cep: string;
-    city: string;
-    neighborhood: string;
-    street: string;
-    number: string;
-    complement: string;
-  };
-  editingData?: Client;
-};
-
 type Props = {
-  formData: ClientFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ClientFormData>>;
   isWaitingAsync: boolean;
   setIsWaitingAsync: React.Dispatch<React.SetStateAction<boolean>>;
   setAlertInfo: React.Dispatch<React.SetStateAction<AlertInfo | undefined>>;
   close: () => void;
+  editingData?: Client;
 };
 
 export default function ClientForm({
-  formData,
-  setFormData,
   isWaitingAsync,
   setIsWaitingAsync,
   setAlertInfo,
   close,
+  editingData,
 }: Props) {
   const globalState = useGlobalState();
-  const isEditing = !!formData.editingData;
+  const isEditing = !!editingData;
+
+  const [data, setData] = useState({
+    type: editingData?.type || ClientType.Individual,
+    name: editingData?.name || "",
+    phone: editingData?.phone || "",
+    cpfCnpj: editingData?.cpfCnpj || "",
+    cep: editingData?.cep || "",
+    city: editingData?.city || "",
+    neighborhood: editingData?.neighborhood || "",
+    street: editingData?.street || "",
+    number: editingData?.number || "",
+    complement: editingData?.complement || "",
+  });
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,17 +51,16 @@ export default function ClientForm({
 
     try {
       setIsWaitingAsync(true);
-      formData = getTrimmed(formData);
-      setFormData({ ...formData });
+      const trimeedData = getTrimmed(data);
+      setData({ ...trimeedData });
 
-      const { dataType, data, editingData } = formData;
       const isEditing = !!editingData;
 
       let err = "";
       if (isEditing) {
-        err = await editData(dataType, editingData.id, data);
+        err = await editData("clients", editingData.id, trimeedData);
       } else {
-        err = await insertData(dataType, data);
+        err = await insertData("clients", trimeedData);
       }
 
       if (!err) {
@@ -95,7 +88,6 @@ export default function ClientForm({
     }
   }
 
-  const { data } = formData;
   return (
     <form onSubmit={handleSubmit}>
       <Divider text="Informações pessoais" />
@@ -108,8 +100,8 @@ export default function ClientForm({
             label="Pessoa"
             value={data.type}
             onChange={(e) => {
-              formData.data.type = e.target.value as ClientType;
-              setFormData({ ...formData });
+              data.type = e.target.value as ClientType;
+              setData({ ...data });
             }}
           >
             <MenuItem value={ClientType.Individual}>Física</MenuItem>
@@ -135,8 +127,8 @@ export default function ClientForm({
           onChange={(e) => {
             let value = e.target.value.toUpperCase();
             value = value.replace(/[^A-Z0-9]/g, "");
-            formData.data.cpfCnpj = value;
-            setFormData({ ...formData });
+            data.cpfCnpj = value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -153,8 +145,8 @@ export default function ClientForm({
           onChange={(e) => {
             let { value } = e.target;
             value = value.replace(/[^0-9]/g, "");
-            formData.data.phone = value;
-            setFormData({ ...formData });
+            data.phone = value;
+            setData({ ...data });
           }}
         />
       </div>
@@ -165,8 +157,8 @@ export default function ClientForm({
         required
         value={data.name}
         onChange={(e) => {
-          formData.data.name = e.target.value;
-          setFormData({ ...formData });
+          data.name = e.target.value;
+          setData({ ...data });
         }}
       />
 
@@ -186,8 +178,8 @@ export default function ClientForm({
           onChange={(e) => {
             let { value } = e.target;
             value = value.replace(/[^0-9]/g, "");
-            formData.data.cep = value;
-            setFormData({ ...formData });
+            data.cep = value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -197,8 +189,8 @@ export default function ClientForm({
           required
           value={data.city}
           onChange={(e) => {
-            formData.data.city = e.target.value;
-            setFormData({ ...formData });
+            data.city = e.target.value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -208,8 +200,8 @@ export default function ClientForm({
           required
           value={data.neighborhood}
           onChange={(e) => {
-            formData.data.neighborhood = e.target.value;
-            setFormData({ ...formData });
+            data.neighborhood = e.target.value;
+            setData({ ...data });
           }}
         />
       </div>
@@ -221,8 +213,8 @@ export default function ClientForm({
           required
           value={data.street}
           onChange={(e) => {
-            formData.data.street = e.target.value;
-            setFormData({ ...formData });
+            data.street = e.target.value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -233,8 +225,8 @@ export default function ClientForm({
           onChange={(e) => {
             let { value } = e.target;
             value = value.replace(/[^0-9]/g, "");
-            formData.data.number = value;
-            setFormData({ ...formData });
+            data.number = value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -243,8 +235,8 @@ export default function ClientForm({
           type="text"
           value={data.complement}
           onChange={(e) => {
-            formData.data.complement = e.target.value;
-            setFormData({ ...formData });
+            data.complement = e.target.value;
+            setData({ ...data });
           }}
         />
       </div>

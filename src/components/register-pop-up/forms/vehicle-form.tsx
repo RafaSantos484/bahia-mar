@@ -5,7 +5,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { AlertInfo } from "../../custom-alert";
 import { getTrimmed } from "../../../utils";
 import { useGlobalState } from "../../../global-state-context";
@@ -13,36 +13,30 @@ import Button from "../../button/button";
 import { editData, insertData } from "../../../apis/firebase";
 import { Vehicle, VehicleType } from "../../../types";
 
-export type VehicleFormData = {
-  dataType: "vehicles";
-  data: {
-    type: VehicleType;
-    brand: string;
-    model: string;
-    plate: string;
-  };
-  editingData?: Vehicle;
-};
-
 type Props = {
-  formData: VehicleFormData;
-  setFormData: React.Dispatch<React.SetStateAction<VehicleFormData>>;
   isWaitingAsync: boolean;
   setIsWaitingAsync: React.Dispatch<React.SetStateAction<boolean>>;
   setAlertInfo: React.Dispatch<React.SetStateAction<AlertInfo | undefined>>;
   close: () => void;
+  editingData?: Vehicle;
 };
 
 export default function VehicleForm({
-  formData,
-  setFormData,
   isWaitingAsync,
   setIsWaitingAsync,
   setAlertInfo,
   close,
+  editingData,
 }: Props) {
   const globalState = useGlobalState();
-  const isEditing = !!formData.editingData;
+  const isEditing = !!editingData;
+
+  const [data, setData] = useState({
+    type: editingData?.type || VehicleType.Motorcycle,
+    brand: editingData?.brand || "",
+    model: editingData?.model || "",
+    plate: editingData?.plate,
+  });
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,19 +44,19 @@ export default function VehicleForm({
 
     try {
       setIsWaitingAsync(true);
-      formData = getTrimmed(formData);
-      setFormData({ ...formData });
-
-      const { dataType, data, editingData } = formData;
-      const isEditing = !!editingData;
+      const trimmedData = getTrimmed(data);
+      setData({ ...trimmedData });
 
       const plateIsRegistered = !!globalState.vehicles.find(
-        (v) => v.plate === data.plate
+        (v) => v.plate === trimmedData.plate
       );
-      if (plateIsRegistered && (!isEditing || data.plate !== editingData.plate))
+      if (
+        plateIsRegistered &&
+        (!isEditing || trimmedData.plate !== editingData.plate)
+      )
         return setAlertInfo({
           severity: "error",
-          message: `A placa ${data.plate} já está cadastrada em outro veículo`,
+          message: `A placa ${trimmedData.plate} já está cadastrada em outro veículo`,
         });
       /*
       if (isEditing && data.plate === editingData.plate) {
@@ -71,9 +65,9 @@ export default function VehicleForm({
 
       let err = "";
       if (isEditing) {
-        err = await editData(dataType, editingData.id, data);
+        err = await editData("vehicles", editingData.id, data);
       } else {
-        err = await insertData(dataType, data);
+        err = await insertData("vehicles", data);
       }
 
       if (!err) {
@@ -109,10 +103,10 @@ export default function VehicleForm({
           <Select
             labelId="vehicle-type-select-label"
             label="Tipo"
-            value={formData.data.type}
+            value={data.type}
             onChange={(e) => {
-              formData.data.type = e.target.value as VehicleType;
-              setFormData({ ...formData });
+              data.type = e.target.value as VehicleType;
+              setData({ ...data });
             }}
           >
             <MenuItem value={VehicleType.Motorcycle}>Moto</MenuItem>
@@ -124,10 +118,10 @@ export default function VehicleForm({
           variant="outlined"
           type="text"
           required
-          value={formData.data.brand}
+          value={data.brand}
           onChange={(e) => {
-            formData.data.brand = e.target.value;
-            setFormData({ ...formData });
+            data.brand = e.target.value;
+            setData({ ...data });
           }}
         />
       </div>
@@ -137,10 +131,10 @@ export default function VehicleForm({
           variant="outlined"
           type="text"
           required
-          value={formData.data.model}
+          value={data.model}
           onChange={(e) => {
-            formData.data.model = e.target.value;
-            setFormData({ ...formData });
+            data.model = e.target.value;
+            setData({ ...data });
           }}
         />
         <TextField
@@ -153,12 +147,12 @@ export default function VehicleForm({
             maxLength: 7,
           }}
           required
-          value={formData.data.plate}
+          value={data.plate}
           onChange={(e) => {
             let value = e.target.value.toUpperCase();
             value = value.replace(/[^A-Z0-9]/g, "");
-            formData.data.plate = value;
-            setFormData({ ...formData });
+            data.plate = value;
+            setData({ ...data });
           }}
         />
       </div>
