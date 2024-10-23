@@ -11,9 +11,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import {
-  CreatingDataType,
   DataType,
   dataTypeTranslator,
+  PopupData,
 } from "../../views/dashboard/registrations/registrations";
 import {
   DeleteOutlineOutlined,
@@ -51,7 +51,7 @@ import { useState } from "react";
 import { deleteData } from "../../apis/firebase";
 import { AlertInfo } from "../custom-alert";
 
-import './dashboard-table.scss'
+import "./dashboard-table.scss";
 
 const tableCols = {
   sales: [
@@ -83,7 +83,7 @@ type Props = {
   dataType: DataType;
   isAdmin: boolean;
   globalState: GlobalState;
-  creatingDataTypeGetSet: (newValue?: CreatingDataType) => CreatingDataType | undefined;
+  popupDataGetSet: (newValue?: PopupData) => PopupData | undefined;
   setAlertInfo: React.Dispatch<React.SetStateAction<AlertInfo | undefined>>;
   isWaitingAsyncGetSet: (newValue?: boolean) => boolean;
 };
@@ -92,7 +92,7 @@ export default function DashboardTable({
   dataType,
   isAdmin,
   globalState,
-  creatingDataTypeGetSet,
+  popupDataGetSet,
   setAlertInfo,
   isWaitingAsyncGetSet,
 }: Props) {
@@ -172,7 +172,7 @@ export default function DashboardTable({
           </TableRow>
         </TableHead>
 
-        <TableBody >
+        <TableBody>
           {globalState[dataType].map((el) => {
             return (
               <TableRow key={el.id} className="table-row">
@@ -189,7 +189,7 @@ export default function DashboardTable({
                     if (attr === "type")
                       value =
                         collaboratorTypeLabels[
-                        (el as Collaborator).type as CollaboratorType
+                          (el as Collaborator).type as CollaboratorType
                         ];
                   } else if (dataType === "vehicles") {
                     if (attr === "type")
@@ -296,9 +296,9 @@ export default function DashboardTable({
                             color="secondary"
                             disabled={isWaitingAsync}
                             onClick={() =>
-                              creatingDataTypeGetSet({
+                              popupDataGetSet({
                                 dataType,
-                                editingData: el,
+                                editingData: el as any,
                               })
                             }
                           >
@@ -311,7 +311,7 @@ export default function DashboardTable({
                     <Tooltip
                       title={
                         dataType === "collaborators" &&
-                          el.id === globalState.loggedUser.id
+                        el.id === globalState.loggedUser.id
                           ? ""
                           : "Deletar"
                       }

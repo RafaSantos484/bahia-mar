@@ -41,25 +41,38 @@ type Props = {
   globalState: GlobalState;
 };
 
-export type CreatingDataType = {
-  dataType: DataType;
-  editingData?:
-    | Vehicle
-    | Client
-    | Product
-    | Collaborator
-    | PaymentMethod
-    | Sale;
-};
+export type PopupData =
+  | {
+      dataType: "vehicles";
+      editingData?: Vehicle;
+    }
+  | {
+      dataType: "clients";
+      editingData?: Client;
+    }
+  | {
+      dataType: "products";
+      editingData?: Product;
+    }
+  | {
+      dataType: "collaborators";
+      editingData?: Collaborator;
+    }
+  | {
+      dataType: "paymentMethods";
+      editingData?: PaymentMethod;
+    }
+  | {
+      dataType: "sales";
+      editingData?: Sale;
+    };
 
 export function Registrations({ globalState }: Props) {
   const isAdmin = globalState.loggedUser.type === CollaboratorType.Admin;
   const [isWaitingAsync, setIsWaitingAsync] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | undefined>();
   const [dataType, setDataType] = useState<DataType>("sales");
-  const [creatingDataType, setCreatingDataType] = useState<
-    CreatingDataType | undefined
-  >(undefined);
+  const [popupData, setPopupData] = useState<PopupData | undefined>(undefined);
 
   // Dados para o Select
   const dataTypes = Object.entries(dataTypeTranslator).map(
@@ -74,13 +87,11 @@ export function Registrations({ globalState }: Props) {
       <LogoHeader />
       <CustomAlert alertInfo={alertInfo} setAlertInfo={setAlertInfo} />
 
-      {!!creatingDataType && (
+      {!!popupData && (
         <RegisterPopUp
-          close={() => setCreatingDataType(undefined)}
-          globalState={globalState}
-          dataType={creatingDataType.dataType}
+          close={() => setPopupData(undefined)}
+          popupData={popupData}
           setAlertInfo={setAlertInfo}
-          editingData={creatingDataType.editingData}
         />
       )}
 
@@ -96,7 +107,7 @@ export function Registrations({ globalState }: Props) {
         <Button
           style={{ marginLeft: "auto" }}
           disabled={isWaitingAsync}
-          onClick={() => setCreatingDataType({ dataType })}
+          onClick={() => setPopupData({ dataType })}
         >{`Cadastrar ${dataTypeTranslator[dataType].singular}`}</Button>
       </div>
       <div className="DashboardTable-box">
@@ -104,12 +115,12 @@ export function Registrations({ globalState }: Props) {
           dataType={dataType}
           isAdmin={isAdmin}
           globalState={globalState}
-          creatingDataTypeGetSet={(newValue?: CreatingDataType) => {
+          popupDataGetSet={(newValue?: PopupData) => {
             if (!!newValue) {
-              setCreatingDataType(newValue);
+              setPopupData(newValue);
               return newValue;
             }
-            return creatingDataType;
+            return popupData;
           }}
           setAlertInfo={setAlertInfo}
           isWaitingAsyncGetSet={(newValue?: boolean) => {

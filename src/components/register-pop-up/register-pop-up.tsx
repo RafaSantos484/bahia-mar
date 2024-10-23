@@ -1,66 +1,21 @@
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import HighlightOffOutlinedIcon from "@mui/icons-material/HighlightOffOutlined";
-import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import CancelIcon from "@mui/icons-material/Cancel";
-import RemoveIcon from "@mui/icons-material/Remove";
-import AddIcon from "@mui/icons-material/Add";
-import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
-
-import Button from "../button/button";
 
 import "./register-pop-up.scss";
-import {
-  blobToString,
-  formatVehicle,
-  getSaleValue,
-  getTrimmed,
-  resizeImage,
-  roundNumber,
-  sleep,
-} from "../../utils";
-import {
-  Card,
-  Checkbox,
-  createTheme,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  ThemeProvider,
-  Tooltip,
-} from "@mui/material";
-import {
-  editData,
-  generateDocId,
-  insertData,
-  uploadFile,
-} from "../../apis/firebase";
+import { sleep } from "../../utils";
+import { createTheme, IconButton, ThemeProvider } from "@mui/material";
+
 import { AlertInfo } from "../custom-alert";
 import {
-  Collaborator,
-  Client,
-  Product,
-  Vehicle,
-  VehicleType,
-  CollaboratorType,
-  ClientType,
-  Sale,
-  PaymentMethod,
-} from "../../types";
-import { GlobalState } from "../../global-state-context";
-import Logo from "../../assets/logo.png";
-import { dataTypeTranslator, DataType } from "../../views/dashboard/registrations/registrations";
+  dataTypeTranslator,
+  PopupData,
+} from "../../views/dashboard/registrations/registrations";
+import PaymentMethodForm, {
+  PaymentMethodFormData,
+} from "./forms/payment-method-form";
+import VehicleForm, { VehicleFormData } from "./forms/vehicle-form";
+import { ClientType, VehicleType } from "../../types";
+import ClientForm, { ClientFormData } from "./forms/client-form";
 
 const themes = createTheme({
   palette: {
@@ -73,22 +28,51 @@ const themes = createTheme({
   },
 });
 
+type FormData = PaymentMethodFormData | VehicleFormData | ClientFormData;
+
 type Props = {
   close: () => void;
-  globalState: GlobalState;
-  dataType: DataType;
   setAlertInfo: Dispatch<SetStateAction<AlertInfo | undefined>>;
-  editingData?:
-    | Vehicle
-    | Client
-    | Product
-    | Collaborator
-    | PaymentMethod
-    | Sale;
+  popupData: PopupData;
   fadeTime?: number;
 };
 
-function Divider({ text }: { text: string }) {
+function getInitialData(popupData: PopupData): FormData {
+  const { dataType, editingData } = popupData;
+  if (dataType === "paymentMethods") {
+    return { ...popupData, data: { name: editingData?.name || "" } };
+  } else if (dataType === "vehicles") {
+    return {
+      ...popupData,
+      data: {
+        type: editingData?.type || VehicleType.Motorcycle,
+        brand: editingData?.brand || "",
+        model: editingData?.model || "",
+        plate: editingData?.plate || "",
+      },
+    };
+  } else if (dataType === "clients") {
+    return {
+      ...popupData,
+      data: {
+        type: editingData?.type || ClientType.Individual,
+        name: editingData?.name || "",
+        phone: editingData?.phone || "",
+        cpfCnpj: editingData?.cpfCnpj || "",
+        cep: editingData?.cep || "",
+        city: editingData?.city || "",
+        neighborhood: editingData?.neighborhood || "",
+        street: editingData?.street || "",
+        number: editingData?.number || "",
+        complement: editingData?.complement || "",
+      },
+    };
+  }
+
+  return { dataType: "paymentMethods", data: { name: "" } };
+}
+
+export function Divider({ text }: { text: string }) {
   return (
     <div className="divider-container">
       <span>{text}</span>
@@ -99,12 +83,75 @@ function Divider({ text }: { text: string }) {
 
 export default function RegisterPopUp({
   close,
-  globalState,
-  dataType,
+  popupData,
   setAlertInfo,
-  editingData,
   fadeTime,
 }: Props) {
+  const { dataType, editingData } = popupData;
+  const _fadeTime = fadeTime || 200;
+  const isEditing = !!editingData;
+
+  const [isOpen, setIsOpen] = useState(true);
+  const [isWaitingAsync, setIsWaitingAsync] = useState(false);
+
+  const [data, setData] = useState(getInitialData(popupData));
+
+  async function _close() {
+    setIsOpen(false);
+    await sleep(_fadeTime);
+    close();
+  }
+
+  return (
+    <div
+      className="global-absolute-fullscreen-container"
+      style={{
+        animation: `${isOpen ? "fade-in" : "fade-out"} ${_fadeTime + 50}ms`,
+      }}
+    >
+      <ThemeProvider theme={themes}>
+        <div className="register-pop-up-container">
+          <div className="header-container">
+            <span>{`${isEditing ? "Editar" : "Cadastrar"} ${
+              dataTypeTranslator[dataType].singular
+            }`}</span>
+            <IconButton
+              color="secondary"
+              className="close-btn"
+              disabled={isWaitingAsync}
+              onClick={_close}
+            >
+              <HighlightOffOutlinedIcon />
+            </IconButton>
+          </div>
+
+          {(() => {
+            const formsDict = {
+              vehicles: VehicleForm,
+              clients: ClientForm,
+              products: PaymentMethodForm,
+              collaborators: PaymentMethodForm,
+              paymentMethods: PaymentMethodForm,
+              sales: PaymentMethodForm,
+            };
+
+            const FormComponent = formsDict[dataType] as any;
+            return (
+              <FormComponent
+                formData={data}
+                setFormData={setData}
+                isWaitingAsync={isWaitingAsync}
+                setIsWaitingAsync={setIsWaitingAsync}
+                setAlertInfo={setAlertInfo}
+                close={_close}
+              />
+            );
+          })()}
+        </div>
+      </ThemeProvider>
+    </div>
+  );
+  /*
   const _fadeTime = fadeTime || 200;
   const isEditing = !!editingData;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -399,7 +446,6 @@ export default function RegisterPopUp({
           </div>
 
           <form onSubmit={handleSubmit} className="pop-up-box">
-
             {dataType === "vehicles" && (
               <>
                 <div className="two-fields-container">
@@ -1167,15 +1213,12 @@ export default function RegisterPopUp({
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={isWaitingAsync}
-            >
+            <Button type="submit" disabled={isWaitingAsync}>
               {isEditing ? "Editar" : "Cadastrar"}
             </Button>
           </form>
         </div>
       </ThemeProvider>
     </div>
-  );
+  );*/
 }
