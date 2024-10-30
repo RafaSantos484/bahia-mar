@@ -92,7 +92,7 @@ export default function ClientForm({
     <form onSubmit={handleSubmit}>
       <Divider text="Informações pessoais" />
 
-      <div className="three-fields-container">
+      <div className="two-fields-container">
         <FormControl>
           <InputLabel id="client-type-select-label">Pessoa</InputLabel>
           <Select
@@ -131,7 +131,20 @@ export default function ClientForm({
             setData({ ...data });
           }}
         />
-        <TextField
+      </div>
+      <div className="two-fields-container">
+      <TextField
+        label="Nome"
+        variant="outlined"
+        type="text"
+        required
+        value={data.name}
+        onChange={(e) => {
+          data.name = e.target.value;
+          setData({ ...data });
+        }}
+      />
+      <TextField
           label="Telefone"
           variant="outlined"
           type="text"
@@ -150,17 +163,7 @@ export default function ClientForm({
           }}
         />
       </div>
-      <TextField
-        label="Nome"
-        variant="outlined"
-        type="text"
-        required
-        value={data.name}
-        onChange={(e) => {
-          data.name = e.target.value;
-          setData({ ...data });
-        }}
-      />
+
 
       <Divider text="Endereço" />
 

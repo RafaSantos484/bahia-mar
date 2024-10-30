@@ -217,7 +217,7 @@ export default function SaleForm({
 
           <Divider text="Cliente" />
 
-          <div className="two-fields-container">
+          <div className="two-fields-container-column">
             <FormControl disabled={typeof data.client !== "string"} required>
               <InputLabel id="client-select-label">Cliente</InputLabel>
               <Select
@@ -266,7 +266,7 @@ export default function SaleForm({
 
           {typeof data.client === "object" && (
             <>
-              <div className="two-fields-container-row">
+              <div className="two-fields-container">
                 <TextField
                   label="Nome"
                   variant="outlined"
@@ -441,7 +441,7 @@ export default function SaleForm({
             text={`Pagamento (Total: R$ ${getSaleValue(data.products, true)})`}
           />
 
-          <div className="two-fields-container">
+          <div className="two-fields-container-column">
             <TextField
               label="Valor pago"
               variant="outlined"
@@ -484,7 +484,7 @@ export default function SaleForm({
         </>
       )}
       {isEditing && (
-        <div className="two-fields-container">
+        <div className="two-fields-container-column">
           <FormGroup>
             <FormControlLabel
               control={

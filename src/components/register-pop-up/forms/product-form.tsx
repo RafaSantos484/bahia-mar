@@ -180,8 +180,8 @@ export default function ProductForm({
               setData({ ...data, price: value });
           }}
         />
-      </div>
-
+      </div>  
+      <label className="label-file-input">Faça o upload de uma foto</label>
       <div className="file-input-container">
         <IconButton
           className="clear-btn"
@@ -198,12 +198,13 @@ export default function ProductForm({
           <img src={data.photoSrc} draggable={false} alt="Foto do produto" />
         ) : (
           <Tooltip title="Fazer upload de foto">
-            <Button
+            <button
+              className="button-file-input"
               onClick={() => fileInputRef.current?.click()}
               disabled={isWaitingAsync}
             >
               <FileUploadOutlined />
-            </Button>
+            </button>
           </Tooltip>
         )}
       </div>
