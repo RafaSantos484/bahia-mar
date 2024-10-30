@@ -8,6 +8,7 @@ interface InputProps {
     type?: 'text' | 'password' | 'email' | 'number' | 'file';
     required?: boolean;
     fullWidth?: boolean;
+    disabled?: boolean;
     value?: string;
     accept?: string;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,11 +16,12 @@ interface InputProps {
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ label, required, type = 'text', value, fullWidth, onChange, inputProps, accept }, ref) => {
+    ({ label, required, type = 'text', value, fullWidth, onChange, inputProps, accept, disabled }, ref) => {
         return (
             <TextField
                 label={label}
                 variant="outlined"
+                disabled={disabled}
                 required={required}
                 type={type}
                 value={value}

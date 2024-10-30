@@ -56,15 +56,15 @@ export default function SaleForm({
     paymentMethodId: "",
     client: isEditing
       ? {
-          name: "",
-          phone: "",
-          cep: "",
-          city: "",
-          neighborhood: "",
-          street: "",
-          number: "",
-          complement: "",
-        }
+        name: "",
+        phone: "",
+        cep: "",
+        city: "",
+        neighborhood: "",
+        street: "",
+        number: "",
+        complement: "",
+      }
       : "",
     products: editingData?.products || {},
     paidFullPrice: !isEditing,
@@ -218,8 +218,23 @@ export default function SaleForm({
           <Divider text="Cliente" />
 
           <div className="two-fields-container">
-            <FormGroup>
+            <FormControl disabled={typeof data.client !== "string"} required>
+              <InputLabel id="client-select-label">Cliente</InputLabel>
+              <Select
+                labelId="client-select-label"
+                label="Cliente"
+                value={typeof data.client === "string" ? data.client : ""}
+                onChange={(e) => setData({ ...data, client: e.target.value })}
+              >
+                {globalState.clients.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>{`${c.name}${!!c.cpfCnpj ? ` - ${c.cpfCnpj}` : ""
+                    }`}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormGroup className="formgroup-checkbox">
               <FormControlLabel
+                className="formcontrol-checkbox"
                 control={
                   <Checkbox
                     checked={typeof data.client === "string"}
@@ -230,15 +245,15 @@ export default function SaleForm({
                         client: checked
                           ? ""
                           : {
-                              name: "",
-                              phone: "",
-                              cep: "",
-                              city: "",
-                              neighborhood: "",
-                              street: "",
-                              number: "",
-                              complement: "",
-                            },
+                            name: "",
+                            phone: "",
+                            cep: "",
+                            city: "",
+                            neighborhood: "",
+                            street: "",
+                            number: "",
+                            complement: "",
+                          },
                       });
                     }}
                   />
@@ -247,21 +262,6 @@ export default function SaleForm({
                 labelPlacement="start"
               />
             </FormGroup>
-            <FormControl disabled={typeof data.client !== "string"} required>
-              <InputLabel id="client-select-label">Cliente</InputLabel>
-              <Select
-                labelId="client-select-label"
-                label="Cliente"
-                value={typeof data.client === "string" ? data.client : ""}
-                onChange={(e) => setData({ ...data, client: e.target.value })}
-              >
-                {globalState.clients.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>{`${c.name}${
-                    !!c.cpfCnpj ? ` - ${c.cpfCnpj}` : ""
-                  }`}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
           </div>
 
           {typeof data.client === "object" && (
@@ -442,10 +442,26 @@ export default function SaleForm({
           />
 
           <div className="two-fields-container">
-            <FormGroup>
+            <TextField
+              label="Valor pago"
+              variant="outlined"
+              type="text"
+              required
+              disabled={data.paidFullPrice}
+              value={data.paidValue}
+              onChange={(e) => {
+                const { value } = e.target;
+                if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
+                  setData({ ...data, paidValue: value });
+                }
+              }}
+            />
+            <FormGroup className="formgroup-checkbox">
               <FormControlLabel
+                className="formcontrol-checkbox"
                 control={
                   <Checkbox
+                    className="checkbox"
                     checked={data.paidFullPrice}
                     onChange={(e) => {
                       const { checked } = e.target;
@@ -461,22 +477,9 @@ export default function SaleForm({
                 }
                 label="Pagou valor total"
                 labelPlacement="start"
+
               />
             </FormGroup>
-            <TextField
-              label="Valor pago"
-              variant="outlined"
-              type="text"
-              required
-              disabled={data.paidFullPrice}
-              value={data.paidValue}
-              onChange={(e) => {
-                const { value } = e.target;
-                if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
-                  setData({ ...data, paidValue: value });
-                }
-              }}
-            />
           </div>
         </>
       )}

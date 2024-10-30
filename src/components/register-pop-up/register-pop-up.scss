@@ -45,21 +45,36 @@ $borderRadius: 30px;
     flex: 1;
     flex-direction: column;
     width: 90%;
-    padding: 0 5%;
+    padding: 0 5% 2.5% 5%;
     overflow: auto;
+    align-items: center;
 
     .two-fields-container {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 90%;
 
       > div {
         width: 48%;
         margin: 2vh 0;
       }
+      .formgroup-checkbox {
+        margin: 0 0 1.25rem 0;
+        
+        .formcontrol-checkbox {
+          display: flex;
+          justify-content: flex-end;
+          width: 100%;
+          margin: 0;
+        }
+      }
     }
     .three-fields-container {
       display: flex;
       justify-content: space-between;
+      width: 90%;
 
       > div {
         width: 30%;
@@ -76,6 +91,7 @@ $borderRadius: 30px;
       height: 15vw;
       border-radius: 10px;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+      
 
       .clear-btn {
         position: absolute;
@@ -112,6 +128,7 @@ $borderRadius: 30px;
     column-gap: 1vw;
     margin-bottom: 2vh;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    width: 90%;
 
     > div {
       display: flex;
@@ -147,6 +164,7 @@ $borderRadius: 30px;
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 100%;
 
   > hr {
     border-top: 0.3vh solid gray;
