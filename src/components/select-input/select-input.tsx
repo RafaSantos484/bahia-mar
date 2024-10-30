@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 
 import "./select-input.scss";
+import { Children } from "react";
 
 type DataType =
   | "vehicles"
@@ -45,7 +46,7 @@ const Select = ({
         labelId="data-type-select-label"
         label="Dado da tabela"
         value={selectedDataType}
-        onChange={(e) => setSelectedDataType(e.target.value as DataType)} // Usando a função recebida para atualizar
+        onChange={(e) => setSelectedDataType(e.target.value as DataType)}
         sx={{ borderRadius: "10px" }}
       >
         {dataTypes.map(({ value, label }) => (

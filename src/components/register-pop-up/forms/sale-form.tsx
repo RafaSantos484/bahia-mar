@@ -266,7 +266,7 @@ export default function SaleForm({
 
           {typeof data.client === "object" && (
             <>
-              <div className="two-fields-container">
+              <div className="two-fields-container-row">
                 <TextField
                   label="Nome"
                   variant="outlined"
