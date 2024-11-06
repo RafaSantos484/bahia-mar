@@ -72,7 +72,7 @@ $borderRadius: 30px;
 
       > div {
         width: 48%;
-        margin: 2vh 0;
+        margin: 0.5rem 0;
       }
       .formgroup-checkbox {
         margin: 0 0 1.25rem 0;
@@ -182,6 +182,10 @@ $borderRadius: 30px;
       }
     }
   }
+}
+
+.editing {
+  width: 60%;
 }
 
 .divider-container {

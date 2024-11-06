@@ -485,6 +485,20 @@ export default function SaleForm({
       )}
       {isEditing && (
         <div className="two-fields-container-column">
+          <TextField
+            label="Valor pago"
+            variant="outlined"
+            type="text"
+            required
+            disabled={data.paidFullPrice}
+            value={data.paidValue}
+            onChange={(e) => {
+              const { value } = e.target;
+              if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
+                setData({ ...data, paidValue: value });
+              }
+            }}
+          />
           <FormGroup>
             <FormControlLabel
               control={
@@ -503,23 +517,9 @@ export default function SaleForm({
                 />
               }
               label="Pagou valor total"
-              labelPlacement="start"
+              labelPlacement="end"
             />
           </FormGroup>
-          <TextField
-            label="Valor pago"
-            variant="outlined"
-            type="text"
-            required
-            disabled={data.paidFullPrice}
-            value={data.paidValue}
-            onChange={(e) => {
-              const { value } = e.target;
-              if (/^(\d+(,\d{0,2})?)?$/.test(value)) {
-                setData({ ...data, paidValue: value });
-              }
-            }}
-          />
         </div>
       )}
 

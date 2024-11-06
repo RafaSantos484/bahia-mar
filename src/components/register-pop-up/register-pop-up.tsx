@@ -71,7 +71,7 @@ export default function RegisterPopUp({
       }}
     >
       <ThemeProvider theme={themes}>
-        <div className="register-pop-up-container">
+        <div className={`register-pop-up-container ${isEditing ? "editing" : ""}`}>
           <div className="header-container">
             <span>{`${isEditing ? "Editar" : "Cadastrar"} ${
               dataTypeTranslator[dataType].singular
