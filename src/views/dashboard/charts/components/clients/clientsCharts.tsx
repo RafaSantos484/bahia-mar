@@ -152,10 +152,12 @@ export function ClientsCharts({ globalState }: Props) {
               <div className="info-container">
                 <div className="info-card">
                   <span>Vendas</span>
+                  <div></div>
                   <span>{clientSales.length}</span>
                 </div>
                 <div className="info-card">
                   <span>Faturamento</span>
+                  <div></div>
                   <span>{`R$ ${totalEarning
                     .toFixed(2)
                     .replace(".", ",")}`}</span>
@@ -183,8 +185,9 @@ export function ClientsCharts({ globalState }: Props) {
                       },
                     ],
                   }}
-                  Title={<span>Faturamento</span>}
+                  Title={<span className="chart-title">Faturamento</span>}
                 />
+                <div className="divider"></div>
                 <DateLineChart
                   chartProps={{
                     dataset: salesPerDayDataset.map((sale) => ({
@@ -206,7 +209,7 @@ export function ClientsCharts({ globalState }: Props) {
                     ],
                     yAxis: [{ tickMinStep: 1, min: 0 }],
                   }}
-                  Title={<span>Pedidos</span>}
+                  Title={<span className="chart-title">Pedidos</span>}
                 />
               </div>
             </div>

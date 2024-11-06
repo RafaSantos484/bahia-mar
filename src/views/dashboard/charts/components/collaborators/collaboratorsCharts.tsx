@@ -129,25 +129,17 @@ export function CollaboratorsCharts({ globalState }: Props) {
             .sort((a, b) => a.date.localeCompare(b.date));
           return (
             <div className="collaborator-report-container">
-              <Tooltip title="Voltar">
-                <IconButton
-                  className="return-btn"
-                  color="primary"
-                  onClick={() => setSelectedCollaborator(undefined)}
-                >
-                  <ArrowCircleLeftIcon />
-                </IconButton>
-              </Tooltip>
-
               <h1>{selectedCollaborator.name}</h1>
 
               <div className="info-container">
                 <div className="info-card">
-                  <span>Vendas</span>
+                  <span>Vendas Totais</span>
+                  <div></div>
                   <span>{collaboratorSales.length}</span>
                 </div>
                 <div className="info-card">
-                  <span>Faturamento</span>
+                  <span>Faturamento Total</span>
+                  <div></div>
                   <span>{`R$ ${totalEarning
                     .toFixed(2)
                     .replace(".", ",")}`}</span>
@@ -175,8 +167,9 @@ export function CollaboratorsCharts({ globalState }: Props) {
                       },
                     ],
                   }}
-                  Title={<span>Faturamento</span>}
+                  Title={<span className="chart-title">Faturamento</span>}
                 />
+                <div className="divider"></div>
                 <DateLineChart
                   chartProps={{
                     dataset: salesPerDayDataset.map((sale) => ({
@@ -198,9 +191,18 @@ export function CollaboratorsCharts({ globalState }: Props) {
                     ],
                     yAxis: [{ tickMinStep: 1, min: 0 }],
                   }}
-                  Title={<span>Pedidos</span>}
+                  Title={<span className="chart-title">Pedidos</span>}
                 />
               </div>
+              <Tooltip title="Voltar">
+                <IconButton
+                  className="return-btn"
+                  color="primary"
+                  onClick={() => setSelectedCollaborator(undefined)}
+                >
+                  <ArrowCircleLeftIcon />
+                </IconButton>
+              </Tooltip>
             </div>
           );
         })()}

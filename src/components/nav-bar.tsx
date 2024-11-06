@@ -5,6 +5,7 @@ import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import { logout } from "../apis/firebase";
+import { Height } from "@mui/icons-material";
 
 type Props = {
   selectedPage: "table" | "charts";
@@ -22,7 +23,7 @@ export default function NavBar({
   return (
     <div
       className="left-bar-container"
-      style={{ width: isLeftBarOpen ? "15vw" : "5vw" }}
+      style={{ width: isLeftBarOpen ? "15rem" : "5rem" }}
     >
       <div className="buttons-container">
         <IconButton

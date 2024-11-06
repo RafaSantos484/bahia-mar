@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 99%;
-  margin: 0 1vw;
-  overflow: auto;
+  height: 100%;
+  padding: 0 2rem;
   animation: fade-in 3s ease;
+  overflow-y: auto;
 
   .upper-menu-container {
     display: flex;
