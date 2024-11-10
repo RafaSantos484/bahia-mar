@@ -5,7 +5,6 @@ import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import { logout } from "../apis/firebase";
-import { Height } from "@mui/icons-material";
 
 type Props = {
   selectedPage: "table" | "charts";

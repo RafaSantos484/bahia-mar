@@ -6,7 +6,6 @@ import {
 } from "@mui/material";
 
 import "./select-input.scss";
-import { Children } from "react";
 
 type DataType =
   | "vehicles"
