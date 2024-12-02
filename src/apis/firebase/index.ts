@@ -26,7 +26,11 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import {
+  connectFunctionsEmulator,
+  getFunctions,
+  httpsCallable,
+} from "firebase/functions";
 import { DataType } from "../../views/dashboard/registrations/registrations";
 
 const firebaseConfig = {
@@ -43,6 +47,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
+if (process.env.REACT_APP_ENV === "dev") {
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}
 
 export async function login(email: string, password: string) {
   const { user } = await signInWithEmailAndPassword(auth, email, password);
