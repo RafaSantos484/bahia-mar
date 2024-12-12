@@ -42,4 +42,4 @@ O sistema pode ser visualizado no link abaixo:
 
 https://bahia-mar.vercel.app
 
-Note que é necessário ter uma conta de administrador para realizar login.
+OBS: Note que é necessário ter uma conta de administrador para realizar login.
