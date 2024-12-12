@@ -1,6 +1,6 @@
 # Bahia Mar - Sistema Web de Gerenciamento
 
-O presente repositório foi construído como Trabalho de Conclusão de Curso pelos estudantes: Daniel André Marinho, Luan Machado Silva Vidal e Rafael Santos de Jesus, pelo Centro Universitário SENAI CIMATEC.
+O presente repositório, que pode ser visualizado no link https://github.com/RafaSantos484/bahia-mar, foi construído como Trabalho de Conclusão de Curso pelos estudantes: Daniel André Marinho, Luan Machado Silva Vidal e Rafael Santos de Jesus, pelo Centro Universitário SENAI CIMATEC.
 O projeto foi desenvolvido com orientação dos professores doutores Márcio Rêne Brandão Soussa e Guilherme Oliveira de Souza.
 
 ## Sobre o Sistema
