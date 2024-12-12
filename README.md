@@ -1,46 +1,45 @@
-# Getting Started with Create React App
+# Bahia Mar - Sistema Web de Gerenciamento
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+O presente repositório foi construído como Trabalho de Conclusão de Curso pelos estudantes: Daniel André Marinho, Luan Machado Silva Vidal e Rafael Santos de Jesus, pelo Centro Universitário SENAI CIMATEC.
+O projeto foi desenvolvido com orientação dos professores doutores Márcio Rêne Brandão Soussa e Guilherme Oliveira de Souza.
 
-## Available Scripts
+## Sobre o Sistema
 
-In the project directory, you can run:
+O sistema possui um sistema de login e recuperação de conta. Não é possível realizar um auto cadastro no sistema (Usuários apenas podem ser cadastrados por administradores.
+Ao fazer login, haverá dois tipos de usuários: Vendedor e Administrador.
 
-### `npm start`
+### Vendedor
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+O vendedor tem acesso à visualização e ao cadastro de Vendas e Clientes, que são as funcionalidades demandadas para seu serviço.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Administrador
 
-### `npm test`
+O administrador pode realizar todas as funcionalidades do sistema, sendo estas
+- Visualizar, Cadasrar, Editar e Remover Clientes, Usuários, Vendas, Métodos de Pagamento, Veículos e Produtos.
+- Acesso aos Dashboards, sendo esses relacionados à venda/faturamento, ou um Dashboard personalizado para cada cliente ou funcionário.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+## Aspectos Técnicos
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+O frontend do sistema foi desenvolvido utilizando a tecnologia ReactJs, enquanto o Backend foi desenvolvido utilizando Firebase
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Como rodar
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Certifique-se de ter o Node.js instalado no seu sistema.
 
-### `npm run eject`
+2. Utilize o seguinte comando para instalar o node e as dependências do projeto:
+```bash
+npm i
+```
+3. Em seguida, utilize o comando a seguir para rodar o projeto
+```bash
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Visualização
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+O sistema pode ser visualizado no link abaixo:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+https://bahia-mar.vercel.app
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Note que é necessário ter uma conta de administrador para realizar login.
